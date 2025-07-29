@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
+// ✅ Extend Request to include userId for auth middleware
 export interface AuthRequest extends Request {
   userId?: string;
 }
@@ -21,8 +22,9 @@ export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
       return res.status(500).json({ message: 'Server configuration error: missing JWT secret' });
     }
 
-    const decoded = jwt.verify(token, jwtSecret) as { userId: string };
-    req.userId = decoded.userId;
+    // ✅ Safely cast decoded JWT
+    const decoded = jwt.verify(token, jwtSecret) as jwt.JwtPayload;
+    req.userId = decoded.userId as string;
     next();
   } catch (err) {
     console.error('❌ Invalid token:', err);
@@ -32,7 +34,7 @@ export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
 
 // 🛡️ Admin Key Middleware
 export const adminAuth = (req: Request, res: Response, next: NextFunction) => {
-  const incomingKey = req.headers['admin-key'] as string;
+  const incomingKey = req.headers['admin-key'] as string | undefined;
   const expectedKey = process.env.ADMIN_KEY;
 
   console.log('\n🔐 [Admin Auth Middleware]');

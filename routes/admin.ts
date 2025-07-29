@@ -1,13 +1,12 @@
 import { Router } from 'express';
 import { addDays } from 'date-fns';
 import jwt from 'jsonwebtoken';
+import Payment from '../models/Payment';
+import Session from '../models/Session';
+import User from '../models/User';
+import UserSettings from '../models/UserSettings';
+import { adminAuth } from '../middleware/auth';
 
-import Payment from '../models/Payment.js';
-import Session from '../models/Session.js';
-import User from '../models/User.js';
-import UserSettings from '../models/UserSettings.js';
-
-import { adminAuth } from '../middleware/auth.js';
 
 const router = Router();
 

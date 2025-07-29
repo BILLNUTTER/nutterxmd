@@ -18,6 +18,7 @@ const auth = (req, res, next) => {
             console.error('❌ JWT_SECRET is not set in environment variables.');
             return res.status(500).json({ message: 'Server configuration error: missing JWT secret' });
         }
+        // ✅ Safely cast decoded JWT
         const decoded = jsonwebtoken_1.default.verify(token, jwtSecret);
         req.userId = decoded.userId;
         next();
