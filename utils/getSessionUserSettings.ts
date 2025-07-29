@@ -1,0 +1,68 @@
+import { WASocket } from '@whiskeysockets/baileys';
+import User from '../models/User.js';
+import UserSettings from '../models/UserSettings.js';
+import { UserDocument } from '../models/User.js';
+import { UserSettingsDocument } from '../models/UserSettings.js';
+
+interface SessionData {
+    user: UserDocument;
+    settings: UserSettingsDocument;
+}
+
+/**
+ * 🔐 Get the bot session owner's user and settings (from sock).
+ * If settings don't exist, create them with defaults.
+ */
+export const getSessionUserSettings = async (
+    sock: WASocket
+): Promise<SessionData | null> => {
+    const sessionPhone = sock.user?.id?.split('@')[0];
+
+    if (!sessionPhone) {
+        console.error('❌ No session phone found from sock.user.id');
+        return null;
+    }
+
+    const user = await User.findOne({ phone: sessionPhone });
+
+    if (!user) {
+        console.error(`❌ No user found with phone ${sessionPhone}`);
+        return null;
+    }
+
+    let settings = await UserSettings.findOne({ userId: user._id });
+
+    if (!settings) {
+        settings = await UserSettings.create({
+            userId: user._id,
+            username: user.username,
+            phone: user.phone,
+            prefix: '.',
+            mode: 'PUBLIC',
+            blockedUsers: [],
+            features: {
+                autoReply: false,
+                typingDelay: false,
+                groupWelcome: false,
+                groupEvents: false,
+                scheduledMessages: false,
+                referralMessage: false,
+                salute: false,
+                antilink: false,
+                onlineOnlyMode: false,
+                paymentReminder: true,
+                customCommands: false,
+                menuCommand: true,
+                blockCommand: false,
+                unblockCommand: false,
+                presence: 'typing',
+                antiDelete: false,
+                autobio: false,
+            }
+        });
+
+        console.log(`[session] 🆕 Created default settings for ${user.username} (${sessionPhone})`);
+    }
+
+    return { user, settings };
+};
