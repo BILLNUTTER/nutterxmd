@@ -1,4 +1,5 @@
 import { WASocket, proto } from '@whiskeysockets/baileys';
+import { Request } from 'express';
 
 // User model used internally (MongoDB schema)
 export interface User {
@@ -70,6 +71,11 @@ export interface BotFeatures {
 
   // 👇 This line allows dynamic access like features[key]
   [key: string]: boolean | string | undefined;
+}
+
+export interface AuthenticatedRequest<T = unknown> extends Request {
+  user?: { id: string; role: string };
+  body: T;
 }
 
 
