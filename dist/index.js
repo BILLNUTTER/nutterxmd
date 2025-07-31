@@ -39,13 +39,13 @@ app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 // ✅ Import routes
 console.log('🔌 Importing route modules...');
-const auth_js_1 = __importDefault(require("./routes/auth.js"));
-const whatsapp_js_1 = __importDefault(require("./routes/whatsapp.js"));
-const payment_js_1 = __importDefault(require("./routes/payment.js"));
-const dashboard_js_1 = __importDefault(require("./routes/dashboard.js"));
-const admin_js_1 = __importDefault(require("./routes/admin.js"));
+const auth_1 = __importDefault(require("./routes/auth"));
+const whatsapp_1 = __importDefault(require("./routes/whatsapp"));
+const payment_1 = __importDefault(require("./routes/payment"));
+const dashboard_1 = __importDefault(require("./routes/dashboard"));
+const admin_1 = __importDefault(require("./routes/admin"));
 const features_1 = __importDefault(require("./routes/features"));
-const whatsapp_js_2 = require("./utils/whatsapp.js");
+const whatsapp_js_1 = require("./utils/whatsapp.js");
 const User_js_1 = __importDefault(require("./models/User.js"));
 const Session_js_1 = __importDefault(require("./models/Session.js"));
 // ✅ Connect MongoDB
@@ -86,7 +86,7 @@ const restoreActiveSessions = async () => {
         }
         try {
             console.log(`🔄 Restoring session for user ${session.userId}...`);
-            await (0, whatsapp_js_2.createWhatsAppSession)(session.userId);
+            await (0, whatsapp_js_1.createWhatsAppSession)(session.userId);
             restoredCount++;
         }
         catch (err) {
@@ -98,7 +98,7 @@ const restoreActiveSessions = async () => {
         const anyUser = await User_js_1.default.findOne({}); // You can filter or prioritize here
         if (anyUser) {
             try {
-                const { qr } = await (0, whatsapp_js_2.createWhatsAppSession)(anyUser._id.toString(), undefined, true);
+                const { qr } = await (0, whatsapp_js_1.createWhatsAppSession)(anyUser._id.toString(), undefined, true);
                 if (qr) {
                     const qrPath = path_1.default.join('./', `qr-${anyUser._id}.png`);
                     fs_1.default.writeFileSync(qrPath, Buffer.from(qr.split(',')[1], 'base64'));
@@ -122,11 +122,11 @@ connectDB().then(() => {
     restoreActiveSessions();
     // ✅ Mount API routes
     console.log('🚏 Registering API routes...');
-    app.use('/api/auth', auth_js_1.default);
-    app.use('/api/whatsapp', whatsapp_js_1.default);
-    app.use('/api/payment', payment_js_1.default);
-    app.use('/api/dashboard', dashboard_js_1.default);
-    app.use('/api/admin', admin_js_1.default);
+    app.use('/api/auth', auth_1.default);
+    app.use('/api/whatsapp', whatsapp_1.default);
+    app.use('/api/payment', payment_1.default);
+    app.use('/api/dashboard', dashboard_1.default);
+    app.use('/api/admin', admin_1.default);
     app.use('/api/features', features_1.default);
     // ✅ Health check route
     app.get('/api/health', (_req, res) => {
