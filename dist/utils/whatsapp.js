@@ -123,7 +123,7 @@ const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = false) 
             version,
             printQRInTerminal: false,
             auth: state,
-            connectTimeoutMs: 60_000,
+            connectTimeoutMs: 60000,
             browser: ['NutterXMD', 'chrome', '1.0.0'],
         });
         if (groupEvents_1.feature.enabled && typeof groupEvents_1.feature.register === 'function') {

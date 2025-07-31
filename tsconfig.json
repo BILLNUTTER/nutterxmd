@@ -5,12 +5,17 @@
         "outDir": "./dist",
         "strict": true,
         "esModuleInterop": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "typeRoots": [
+            "./node_modules/@types",
+            "./shared"
+        ] // ✅ Add this
     },
     "include": [
         "./*.ts",
         "./routes",
         "./controllers",
-        "./utils"
-    ] // or just ["."]
+        "./utils",
+        "./shared"
+    ]
 }

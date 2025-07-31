@@ -16,13 +16,11 @@ const dp_1 = require("./commands/dp");
 const test_1 = require("./commands/test");
 const mute_1 = require("./commands/mute");
 const open_1 = require("./commands/open");
-const sing_1 = require("./commands/sing");
-const play_1 = require("./commands/play");
 // Initialize command map
 const commands = new Map();
 const commandList = [
     ping_1.command, say_1.command, menu_1.command, kick_1.command, block_1.command, demote_1.command,
-    promote_1.command, owner_1.command, dp_1.command, mute_1.command, open_1.command, sing_1.command, play_1.command, test_1.command,
+    promote_1.command, owner_1.command, dp_1.command, mute_1.command, open_1.command, test_1.command,
 ];
 for (const cmd of commandList) {
     commands.set(cmd.name, cmd);
