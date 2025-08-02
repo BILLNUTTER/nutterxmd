@@ -1,12 +1,16 @@
-import makeWASocket, {
-  useMultiFileAuthState as multiFileAuth,
-  fetchLatestBaileysVersion,
-  WASocket,
-  AuthenticationCreds
-} from '@whiskeysockets/baileys';
+import * as baileys from '@whiskeysockets/baileys';
 import * as fs from 'fs';
 import * as path from 'path';
 import QRCode from 'qrcode';
+
+// Extract Baileys functions/types
+const makeWASocket = baileys.makeWASocket;
+const multiFileAuth = baileys.useMultiFileAuthState;
+const fetchLatestBaileysVersion = baileys.fetchLatestBaileysVersion;
+
+type WASocket = baileys.WASocket;
+type AuthenticationCreds = baileys.AuthenticationCreds;
+
 import Session from '../models/Session.js';
 import User from '../models/User.js';
 import { handleCommand } from './messageHandler.js';
