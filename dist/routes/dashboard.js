@@ -1,14 +1,9 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const UserSettings_js_1 = __importDefault(require("../models/UserSettings.js"));
-const User_js_1 = __importDefault(require("../models/User.js"));
-const Session_js_1 = __importDefault(require("../models/Session.js"));
-const auth_js_1 = require("../middleware/auth.js");
-const router = (0, express_1.Router)();
+import { Router } from 'express';
+import UserSettings from '../models/UserSettings.js';
+import User from '../models/User.js';
+import Session from '../models/Session.js';
+import { auth } from '../middleware/auth.js';
+const router = Router();
 // Shared fallback default settings
 const defaultSettings = (userId, username, phone) => ({
     userId,
@@ -41,18 +36,18 @@ const defaultSettings = (userId, username, phone) => ({
     },
 });
 // GET: Dashboard data
-router.get('/', auth_js_1.auth, async (req, res) => {
+router.get('/', auth, async (req, res) => {
     try {
         const userId = req.userId;
-        const user = await User_js_1.default.findById(userId).select('-password');
+        const user = await User.findById(userId).select('-password');
         if (!user)
             return res.status(404).json({ message: 'User not found' });
-        let settings = await UserSettings_js_1.default.findOne({ userId });
+        let settings = await UserSettings.findOne({ userId });
         // Auto-create if missing
         if (!settings) {
-            settings = await UserSettings_js_1.default.create(defaultSettings(userId, user.username, user.phone));
+            settings = await UserSettings.create(defaultSettings(userId, user.username, user.phone));
         }
-        const session = await Session_js_1.default.findOne({ userId });
+        const session = await Session.findOne({ userId });
         res.json({
             user,
             settings,
@@ -65,11 +60,11 @@ router.get('/', auth_js_1.auth, async (req, res) => {
     }
 });
 // PATCH: Toggle features or update prefix
-router.patch('/features', auth_js_1.auth, async (req, res) => {
+router.patch('/features', auth, async (req, res) => {
     try {
         const userId = req.userId;
         const { features, prefix } = req.body;
-        const user = await User_js_1.default.findById(userId).select('username phone');
+        const user = await User.findById(userId).select('username phone');
         if (!user)
             return res.status(404).json({ message: 'User not found' });
         const updates = {
@@ -80,7 +75,7 @@ router.patch('/features', auth_js_1.auth, async (req, res) => {
             updates.features = features;
         if (prefix)
             updates.prefix = prefix;
-        const updated = await UserSettings_js_1.default.findOneAndUpdate({ userId }, updates, { upsert: true, new: true });
+        const updated = await UserSettings.findOneAndUpdate({ userId }, updates, { upsert: true, new: true });
         const changes = [];
         if (features) {
             for (const [key, value] of Object.entries(features)) {
@@ -111,14 +106,14 @@ router.patch('/features', auth_js_1.auth, async (req, res) => {
     }
 });
 // PATCH: Update prefix & mode
-router.patch('/settings', auth_js_1.auth, async (req, res) => {
+router.patch('/settings', auth, async (req, res) => {
     try {
         const userId = req.userId;
         const { prefix, mode } = req.body;
-        const user = await User_js_1.default.findById(userId).select('username phone');
+        const user = await User.findById(userId).select('username phone');
         if (!user)
             return res.status(404).json({ message: 'User not found' });
-        const updatedSettings = await UserSettings_js_1.default.findOneAndUpdate({ userId }, {
+        const updatedSettings = await UserSettings.findOneAndUpdate({ userId }, {
             prefix,
             mode,
             username: user.username,
@@ -149,14 +144,14 @@ router.patch('/settings', auth_js_1.auth, async (req, res) => {
     }
 });
 // PATCH: Custom commands
-router.patch('/commands', auth_js_1.auth, async (req, res) => {
+router.patch('/commands', auth, async (req, res) => {
     try {
         const userId = req.userId;
         const { customCommands } = req.body;
-        const user = await User_js_1.default.findById(userId).select('username phone');
+        const user = await User.findById(userId).select('username phone');
         if (!user)
             return res.status(404).json({ message: 'User not found' });
-        const updated = await UserSettings_js_1.default.findOneAndUpdate({ userId }, {
+        const updated = await UserSettings.findOneAndUpdate({ userId }, {
             customCommands,
             username: user.username,
             phone: user.phone
@@ -171,4 +166,4 @@ router.patch('/commands', auth_js_1.auth, async (req, res) => {
         res.status(500).json({ message: 'Failed to update custom commands' });
     }
 });
-exports.default = router;
+export default router;

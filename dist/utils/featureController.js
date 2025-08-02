@@ -1,19 +1,13 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.updatePrefix = exports.updateUserSetting = exports.getUserSettings = void 0;
-const UserSettings_1 = __importDefault(require("../models/UserSettings"));
+import UserSettings from '../models/UserSettings';
 // ===============================================
 // USER FEATURE FLAGS (Stored in MongoDB)
 // ===============================================
-const getUserSettings = async (req, res) => {
+export const getUserSettings = async (req, res) => {
     try {
         const userId = req.user?.id;
         if (!userId)
             return res.status(401).json({ error: 'Unauthorized' });
-        const settings = await UserSettings_1.default.findOne({ userId });
+        const settings = await UserSettings.findOne({ userId });
         return res.status(200).json(settings || {});
     }
     catch (err) {
@@ -21,8 +15,7 @@ const getUserSettings = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch user settings' });
     }
 };
-exports.getUserSettings = getUserSettings;
-const updateUserSetting = async (req, res) => {
+export const updateUserSetting = async (req, res) => {
     try {
         const userId = req.user?.id;
         if (!userId)
@@ -31,7 +24,7 @@ const updateUserSetting = async (req, res) => {
         if (typeof key !== 'string') {
             return res.status(400).json({ error: 'Invalid key' });
         }
-        const settings = await UserSettings_1.default.findOneAndUpdate({ userId }, { $set: { [key]: value } }, { new: true, upsert: true });
+        const settings = await UserSettings.findOneAndUpdate({ userId }, { $set: { [key]: value } }, { new: true, upsert: true });
         res.status(200).json({
             message: `✅ ${key} updated successfully`,
             settings,
@@ -42,18 +35,17 @@ const updateUserSetting = async (req, res) => {
         res.status(500).json({ error: 'Failed to update user setting' });
     }
 };
-exports.updateUserSetting = updateUserSetting;
 // ===============================================
 // BOT PREFIX UPDATE
 // ===============================================
-const updatePrefix = async (req, res) => {
+export const updatePrefix = async (req, res) => {
     try {
         const userId = req.user?.id;
         const { prefix } = req.body;
         if (!prefix || typeof prefix !== 'string') {
             return res.status(400).json({ error: 'Invalid or missing prefix.' });
         }
-        const updated = await UserSettings_1.default.findOneAndUpdate({ userId }, { prefix }, { new: true, upsert: true });
+        const updated = await UserSettings.findOneAndUpdate({ userId }, { prefix }, { new: true, upsert: true });
         return res.status(200).json({
             message: 'Prefix updated successfully',
             data: updated.prefix,
@@ -64,4 +56,3 @@ const updatePrefix = async (req, res) => {
         return res.status(500).json({ error: 'Failed to update prefix' });
     }
 };
-exports.updatePrefix = updatePrefix;

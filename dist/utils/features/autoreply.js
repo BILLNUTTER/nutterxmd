@@ -1,13 +1,7 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.feature = void 0;
-const dotenv_1 = __importDefault(require("dotenv"));
-const UserSettings_js_1 = __importDefault(require("../../models/UserSettings.js"));
-const User_js_1 = __importDefault(require("../../models/User.js"));
-dotenv_1.default.config();
+import dotenv from 'dotenv';
+import UserSettings from '../../models/UserSettings.js';
+import User from '../../models/User.js';
+dotenv.config();
 const WATERMARK = '_➤ nutterxmd_';
 const replies = {
     hi: ['Sasa boss 😎', 'Mambo vipi?', 'Niaje! 🙌'],
@@ -43,7 +37,7 @@ function exactWordMatch(text, keyword) {
     const pattern = new RegExp(`\\b${keyword}\\b`, 'i');
     return pattern.test(text);
 }
-exports.feature = {
+export const feature = {
     name: 'autoreply',
     enabled: () => true,
     handle: async (sock, msg) => {
@@ -51,16 +45,16 @@ exports.feature = {
         if (msg.key.fromMe || !jid)
             return;
         const sessionPhone = sock.user?.id?.split('@')[0];
-        const sessionUser = await User_js_1.default.findOne({ phone: sessionPhone });
+        const sessionUser = await User.findOne({ phone: sessionPhone });
         if (!sessionUser) {
             if (process.env.VERBOSE_LOGGING?.toLowerCase() === 'true') {
                 console.log(`[autoreply] ❌ No session user found for ${sessionPhone}`);
             }
             return;
         }
-        let settings = await UserSettings_js_1.default.findOne({ userId: sessionUser._id });
+        let settings = await UserSettings.findOne({ userId: sessionUser._id });
         if (!settings) {
-            settings = await UserSettings_js_1.default.create({
+            settings = await UserSettings.create({
                 userId: sessionUser._id,
                 username: sessionUser.username,
                 phone: sessionUser.phone,

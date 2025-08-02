@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import Payment from '../models/Payment.js';
+import Payment from '../models/payment.js';
 import User from '../models/User.js';
 import { auth } from '../middleware/auth.js';
 

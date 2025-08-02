@@ -1,15 +1,9 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.feature = void 0;
-const axios_1 = __importDefault(require("axios"));
-const dotenv_1 = __importDefault(require("dotenv"));
-const User_js_1 = __importDefault(require("../../models/User.js"));
-const UserSettings_js_1 = __importDefault(require("../../models/UserSettings.js"));
+import axios from 'axios';
+import dotenv from 'dotenv';
+import User from '../../models/User.js';
+import UserSettings from '../../models/UserSettings.js';
 const WATERMARK = '_➤ nutterxmd_';
-dotenv_1.default.config();
+dotenv.config();
 const getProfilePictureUrl = async (sock, jid) => {
     try {
         const url = await sock.profilePictureUrl(jid, 'image');
@@ -19,7 +13,7 @@ const getProfilePictureUrl = async (sock, jid) => {
         return null;
     }
 };
-exports.feature = {
+export const feature = {
     name: 'groupEvents',
     enabled: () => true,
     register: (sock) => {
@@ -27,12 +21,12 @@ exports.feature = {
             const { id: groupJid, participants, action } = update;
             try {
                 const sessionPhone = sock.user?.id?.split('@')[0];
-                const sessionUser = await User_js_1.default.findOne({ phone: sessionPhone });
+                const sessionUser = await User.findOne({ phone: sessionPhone });
                 if (!sessionUser) {
                     console.log(`[groupEvents] ❌ No session user for ${sessionPhone}`);
                     return;
                 }
-                const settings = await UserSettings_js_1.default.findOne({ userId: sessionUser._id });
+                const settings = await UserSettings.findOne({ userId: sessionUser._id });
                 if (!settings?.features?.groupWelcome) {
                     console.log(`[groupEvents] ⛔ groupWelcome is disabled for ${sessionPhone}`);
                     return;
@@ -56,7 +50,7 @@ exports.feature = {
                         return;
                     const ppUrl = await getProfilePictureUrl(sock, imageJid);
                     if (ppUrl) {
-                        const response = await axios_1.default.get(ppUrl, { responseType: 'arraybuffer' });
+                        const response = await axios.get(ppUrl, { responseType: 'arraybuffer' });
                         const imageBuffer = Buffer.from(response.data, 'binary');
                         await sock.sendMessage(groupJid, {
                             image: imageBuffer,

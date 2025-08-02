@@ -1,60 +1,21 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.activeSessions = exports.disconnectSession = exports.getActiveSession = exports.sendWhatsAppMessage = exports.createWhatsAppSession = exports.generateSecureSessionId = void 0;
-const baileys_1 = __importStar(require("@whiskeysockets/baileys"));
-const fs = __importStar(require("fs"));
-const path = __importStar(require("path"));
-const qrcode_1 = __importDefault(require("qrcode"));
-const Session_js_1 = __importDefault(require("../models/Session.js"));
-const User_js_1 = __importDefault(require("../models/User.js"));
-const messageHandler_1 = require("./messageHandler");
-const messageCache_1 = require("../utils/messageCache");
-const groupEvents_1 = require("./features/groupEvents");
-const antidelete_1 = require("./features/antidelete");
-const autobio_1 = require("./features/autobio");
-const antilink_1 = require("./features/antilink");
-const autoreply_1 = require("./features/autoreply");
-const presence_1 = require("./features/presence");
-const salute_1 = require("./features/salute");
-const autoread_1 = require("./features/autoread");
-const autoview_1 = require("./features/autoview");
-const autolike_1 = require("./features/autolike");
+import makeWASocket, { useMultiFileAuthState as multiFileAuth, fetchLatestBaileysVersion } from '@whiskeysockets/baileys';
+import * as fs from 'fs';
+import * as path from 'path';
+import QRCode from 'qrcode';
+import Session from '../models/Session.js';
+import User from '../models/User.js';
+import { handleCommand } from './messageHandler';
+import { saveMessage } from '../utils/messageCache';
+import { feature as groupEvents } from './features/groupEvents';
+import { feature as antiDelete } from './features/antidelete';
+import { feature as autoBio } from './features/autobio';
+import { feature as antiLink } from './features/antilink';
+import { feature as autoReply } from './features/autoreply';
+import { feature as presence } from './features/presence';
+import { feature as salute } from './features/salute';
+import { feature as autoread } from './features/autoread';
+import { feature as autoview } from './features/autoview';
+import { feature as autolike } from './features/autolike';
 const isFreshCreds = (sessionFolderPath) => {
     const credsFilePath = path.join(sessionFolderPath, 'creds.json');
     return fs.existsSync(credsFilePath);
@@ -62,8 +23,7 @@ const isFreshCreds = (sessionFolderPath) => {
 // ✅ Load admin phone from .env
 const adminPhone = process.env.ADMIN_PHONE || '';
 const activeSessions = new Map();
-exports.activeSessions = activeSessions;
-const generateSecureSessionId = () => {
+export const generateSecureSessionId = () => {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const length = 1000 + Math.floor(Math.random() * 100);
     let sessionString = '';
@@ -72,28 +32,27 @@ const generateSecureSessionId = () => {
     }
     return `nutter-xmd-${sessionString}`;
 };
-exports.generateSecureSessionId = generateSecureSessionId;
 const generateBase64QRCode = async (qrText) => {
     try {
-        return await qrcode_1.default.toDataURL(qrText);
+        return await QRCode.toDataURL(qrText);
     }
     catch (err) {
         console.error('❌ Failed to generate QR Code image:', err);
         return '';
     }
 };
-const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = false) => {
+export const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = false) => {
     if (!userId)
         throw new Error('userId is required');
     const sessionFolder = path.join('./sessions', userId);
     const credsPath = path.join(sessionFolder, 'creds.json');
     let secureSessionId = '';
     // 🧹 Remove orphaned DB session
-    const existingSession = await Session_js_1.default.findOne({ userId, isLinked: true, isActive: true });
+    const existingSession = await Session.findOne({ userId, isLinked: true, isActive: true });
     if (existingSession && !fs.existsSync(credsPath)) {
         console.warn('🧹 Orphaned session found — cleaning DB record...');
-        await Session_js_1.default.findOneAndUpdate({ userId }, { sessionId: '', isLinked: false, isActive: false });
-        await User_js_1.default.findByIdAndUpdate(userId, { sessionId: '' });
+        await Session.findOneAndUpdate({ userId }, { sessionId: '', isLinked: false, isActive: false });
+        await User.findByIdAndUpdate(userId, { sessionId: '' });
     }
     // 🔌 Cleanup any existing in-memory socket
     if (activeSessions.has(userId)) {
@@ -117,20 +76,20 @@ const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = false) 
         credsExist;
     // ✅ Restore existing session if valid and not forcing new
     if (!forceNew && sessionIsLive) {
-        const { state, saveCreds } = await (0, baileys_1.useMultiFileAuthState)(sessionFolder);
-        const { version } = await (0, baileys_1.fetchLatestBaileysVersion)();
-        const sock = (0, baileys_1.default)({
+        const { state, saveCreds } = await multiFileAuth(sessionFolder);
+        const { version } = await fetchLatestBaileysVersion();
+        const sock = makeWASocket({
             version,
             printQRInTerminal: false,
             auth: state,
             connectTimeoutMs: 60000,
             browser: ['NutterXMD', 'chrome', '1.0.0'],
         });
-        if (groupEvents_1.feature.enabled && typeof groupEvents_1.feature.register === 'function') {
-            groupEvents_1.feature.register(sock);
+        if (groupEvents.enabled && typeof groupEvents.register === 'function') {
+            groupEvents.register(sock);
         }
-        if (autobio_1.feature.enabled && typeof autobio_1.feature.register === 'function') {
-            autobio_1.feature.register(sock);
+        if (autoBio.enabled && typeof autoBio.register === 'function') {
+            autoBio.register(sock);
         }
         // ✅ PATCH: Auto-fill missing phone
         setTimeout(async () => {
@@ -138,14 +97,14 @@ const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = false) 
                 const linkedNumber = sock.user?.id?.split('@')[0];
                 if (!linkedNumber)
                     return;
-                const user = await User_js_1.default.findById(userId);
+                const user = await User.findById(userId);
                 if (!user) {
                     console.warn(`❌ No user found in DB with ID: ${userId}`);
                     return;
                 }
                 if (!user.phone) {
                     console.log(`📲 Setting missing phone for user ${userId}: ${linkedNumber}`);
-                    await User_js_1.default.findByIdAndUpdate(userId, { phone: linkedNumber });
+                    await User.findByIdAndUpdate(userId, { phone: linkedNumber });
                 }
             }
             catch (err) {
@@ -158,35 +117,35 @@ const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = false) 
             if (!msg?.message)
                 return;
             try {
-                if (presence_1.feature.enabled && typeof presence_1.feature.handle === 'function') {
-                    await presence_1.feature.handle(sock, msg);
+                if (presence.enabled && typeof presence.handle === 'function') {
+                    await presence.handle(sock, msg);
                 }
-                if (salute_1.feature.enabled && typeof salute_1.feature.onReady === 'function') {
-                    salute_1.feature.onReady(sock);
+                if (salute.enabled && typeof salute.onReady === 'function') {
+                    salute.onReady(sock);
                 }
-                if (salute_1.feature.enabled && typeof salute_1.feature.handle === 'function') {
-                    await salute_1.feature.handle(sock, msg);
+                if (salute.enabled && typeof salute.handle === 'function') {
+                    await salute.handle(sock, msg);
                 }
-                (0, messageCache_1.saveMessage)(msg);
-                await (0, messageHandler_1.handleCommand)(sock, msg);
+                saveMessage(msg);
+                await handleCommand(sock, msg);
                 // ✅ Anti-delete
-                if (antidelete_1.feature.enabled && typeof antidelete_1.feature.handle === 'function') {
-                    await antidelete_1.feature.handle(sock, msg);
+                if (antiDelete.enabled && typeof antiDelete.handle === 'function') {
+                    await antiDelete.handle(sock, msg);
                 }
                 // ✅ Auto-reply
-                if (autoreply_1.feature.enabled && typeof autoreply_1.feature.handle === 'function') {
-                    await autoreply_1.feature.handle(sock, msg);
+                if (autoReply.enabled && typeof autoReply.handle === 'function') {
+                    await autoReply.handle(sock, msg);
                 }
                 // ✅ Auto-view Statuses
-                if (autoview_1.feature.enabled && typeof autoview_1.feature.handle === 'function') {
-                    await autoview_1.feature.handle(sock, msg);
+                if (autoview.enabled && typeof autoview.handle === 'function') {
+                    await autoview.handle(sock, msg);
                 }
                 // ✅ Anti-link
-                if (antilink_1.feature.enabled && typeof antilink_1.feature.handle === 'function') {
-                    await antilink_1.feature.handle(sock, msg);
+                if (antiLink.enabled && typeof antiLink.handle === 'function') {
+                    await antiLink.handle(sock, msg);
                 }
-                if (autoread_1.feature.enabled && typeof autoread_1.feature.handle === 'function') {
-                    await autoread_1.feature.handle(sock, msg);
+                if (autoread.enabled && typeof autoread.handle === 'function') {
+                    await autoread.handle(sock, msg);
                 }
             }
             catch (err) {
@@ -216,20 +175,20 @@ const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = false) 
     if (!fs.existsSync(sessionFolder)) {
         fs.mkdirSync(sessionFolder, { recursive: true });
     }
-    const { state, saveCreds } = await (0, baileys_1.useMultiFileAuthState)(sessionFolder);
-    const { version } = await (0, baileys_1.fetchLatestBaileysVersion)();
+    const { state, saveCreds } = await multiFileAuth(sessionFolder);
+    const { version } = await fetchLatestBaileysVersion();
     return new Promise((resolve) => {
-        const sock = (0, baileys_1.default)({
+        const sock = makeWASocket({
             version,
             printQRInTerminal: false,
             auth: state,
             browser: ['NutterXMD', 'chrome', '1.0.0']
         });
-        if (groupEvents_1.feature.enabled && typeof groupEvents_1.feature.register === 'function') {
-            groupEvents_1.feature.register(sock);
+        if (groupEvents.enabled && typeof groupEvents.register === 'function') {
+            groupEvents.register(sock);
         }
-        if (autobio_1.feature.enabled && typeof autobio_1.feature.register === 'function') {
-            autobio_1.feature.register(sock);
+        if (autoBio.enabled && typeof autoBio.register === 'function') {
+            autoBio.register(sock);
         }
         sock.ev.on('messages.upsert', async ({ messages }) => {
             const msg = messages[0];
@@ -237,37 +196,37 @@ const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = false) 
                 return;
             try {
                 //auto-read
-                if (autoread_1.feature.enabled && typeof autoread_1.feature.handle === 'function') {
-                    await autoread_1.feature.handle(sock, msg);
+                if (autoread.enabled && typeof autoread.handle === 'function') {
+                    await autoread.handle(sock, msg);
                 }
                 // ✅ Auto-view Statuses
-                if (autoview_1.feature.enabled && typeof autoview_1.feature.handle === 'function') {
-                    await autoview_1.feature.handle(sock, msg);
+                if (autoview.enabled && typeof autoview.handle === 'function') {
+                    await autoview.handle(sock, msg);
                 }
                 //autolike status
-                if (autolike_1.feature.enabled && typeof autolike_1.feature.handle === 'function') {
-                    await autolike_1.feature.handle(sock, msg);
+                if (autolike.enabled && typeof autolike.handle === 'function') {
+                    await autolike.handle(sock, msg);
                 }
                 // ✅ Simulate presence
-                if (presence_1.feature.enabled && typeof presence_1.feature.handle === 'function') {
-                    await presence_1.feature.handle(sock, msg);
+                if (presence.enabled && typeof presence.handle === 'function') {
+                    await presence.handle(sock, msg);
                 }
-                if (salute_1.feature.enabled && typeof salute_1.feature.onReady === 'function') {
-                    salute_1.feature.onReady(sock);
+                if (salute.enabled && typeof salute.onReady === 'function') {
+                    salute.onReady(sock);
                 }
-                (0, messageCache_1.saveMessage)(msg);
-                await (0, messageHandler_1.handleCommand)(sock, msg);
+                saveMessage(msg);
+                await handleCommand(sock, msg);
                 // ✅ Anti-delete
-                if (antidelete_1.feature.enabled && typeof antidelete_1.feature.handle === 'function') {
-                    await antidelete_1.feature.handle(sock, msg);
+                if (antiDelete.enabled && typeof antiDelete.handle === 'function') {
+                    await antiDelete.handle(sock, msg);
                 }
                 // ✅ Auto-reply
-                if (autoreply_1.feature.enabled && typeof autoreply_1.feature.handle === 'function') {
-                    await autoreply_1.feature.handle(sock, msg);
+                if (autoReply.enabled && typeof autoReply.handle === 'function') {
+                    await autoReply.handle(sock, msg);
                 }
                 // ✅ Anti-link
-                if (antilink_1.feature.enabled && typeof antilink_1.feature.handle === 'function') {
-                    await antilink_1.feature.handle(sock, msg);
+                if (antiLink.enabled && typeof antiLink.handle === 'function') {
+                    await antiLink.handle(sock, msg);
                 }
             }
             catch (err) {
@@ -283,7 +242,7 @@ const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = false) 
                 return resolve({ qr: base64Qr });
             }
             if (connection === 'open' && !secureSessionId) {
-                secureSessionId = (0, exports.generateSecureSessionId)();
+                secureSessionId = generateSecureSessionId();
                 await saveCreds();
                 const creds = await state.creds;
                 const linkedNumber = sock.user?.id?.split('@')[0] || '';
@@ -294,7 +253,7 @@ const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = false) 
                     sessionId: secureSessionId,
                     isConnected: true
                 });
-                await Session_js_1.default.findOneAndUpdate({ userId }, {
+                await Session.findOneAndUpdate({ userId }, {
                     sessionId: secureSessionId,
                     sessionPath,
                     sessionData: creds,
@@ -302,10 +261,10 @@ const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = false) 
                     isActive: true,
                     whatsappNumber: linkedNumber
                 }, { upsert: true });
-                const user = await User_js_1.default.findById(userId);
+                const user = await User.findById(userId);
                 if (!user) {
                     console.log(`🆕 Creating new user entry with phone: ${linkedNumber}`);
-                    await User_js_1.default.create({
+                    await User.create({
                         _id: userId,
                         phone: linkedNumber,
                         sessionId: secureSessionId,
@@ -323,16 +282,16 @@ const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = false) 
                     const updateData = { sessionId: secureSessionId };
                     if (!user.phone)
                         updateData.phone = linkedNumber;
-                    await User_js_1.default.findByIdAndUpdate(userId, updateData);
+                    await User.findByIdAndUpdate(userId, updateData);
                 }
                 if (linkedNumber) {
                     // ✅ Ensure user exists before saving session info
-                    const existingUser = await User_js_1.default.findById(userId);
+                    const existingUser = await User.findById(userId);
                     if (!existingUser) {
                         console.error(`❌ User with ID ${userId} not found – cannot save phone`);
                     }
                     else {
-                        await User_js_1.default.findByIdAndUpdate(userId, {
+                        await User.findByIdAndUpdate(userId, {
                             sessionId: secureSessionId,
                             phone: linkedNumber
                         });
@@ -380,40 +339,37 @@ const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = false) 
                     console.warn(`⚠️ Unexpected disconnect (reason: ${errorCode}).`);
                 }
                 // 🧹 Cleanup DB session and memory
-                await Session_js_1.default.findOneAndUpdate({ userId }, { sessionId: '', isActive: false, isLinked: false });
-                await User_js_1.default.findByIdAndUpdate(userId, { sessionId: '' });
+                await Session.findOneAndUpdate({ userId }, { sessionId: '', isActive: false, isLinked: false });
+                await User.findByIdAndUpdate(userId, { sessionId: '' });
                 activeSessions.delete(userId);
                 // 🔁 Only try to reconnect if not a manual logout
                 if (!isConflict && !isLoggedOut) {
                     console.log('🔁 Attempting reconnect in 2s...');
-                    setTimeout(() => (0, exports.createWhatsAppSession)(userId, userPhoneNumber), 2000);
+                    setTimeout(() => createWhatsAppSession(userId, userPhoneNumber), 2000);
                 }
             }
         });
         sock.ev.on('creds.update', saveCreds);
     });
 };
-exports.createWhatsAppSession = createWhatsAppSession;
 // 📤 Send message from active session
-const sendWhatsAppMessage = async (sessionId, to, message) => {
+export const sendWhatsAppMessage = async (sessionId, to, message) => {
     const session = activeSessions.get(sessionId);
     if (!session || !session.isConnected || !session.socket) {
         throw new Error('❌ WhatsApp session not connected');
     }
     await session.socket.sendMessage(to, { text: message });
 };
-exports.sendWhatsAppMessage = sendWhatsAppMessage;
 // 🔎 Get session in memory
-const getActiveSession = (sessionId) => {
+export const getActiveSession = (sessionId) => {
     return activeSessions.get(sessionId);
 };
-exports.getActiveSession = getActiveSession;
 // ❌ Disconnect session
-const disconnectSession = (sessionId) => {
+export const disconnectSession = (sessionId) => {
     const session = activeSessions.get(sessionId);
     if (session) {
         session.socket?.ws?.close?.();
         activeSessions.delete(sessionId);
     }
 };
-exports.disconnectSession = disconnectSession;
+export { activeSessions };

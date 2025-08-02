@@ -1,7 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = require("mongoose");
-const userSettingsSchema = new mongoose_1.Schema({
+import { Schema, model } from 'mongoose';
+const userSettingsSchema = new Schema({
     userId: { type: String, required: true, unique: true },
     username: { type: String },
     // 📞 Required to ensure tracking per user
@@ -44,4 +42,4 @@ const userSettingsSchema = new mongoose_1.Schema({
 }, {
     timestamps: true
 });
-exports.default = (0, mongoose_1.model)('UserSettings', userSettingsSchema);
+export default model('UserSettings', userSettingsSchema);

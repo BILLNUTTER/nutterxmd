@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.command = void 0;
-const getSessionUserSettings_js_1 = require("../../utils/getSessionUserSettings.js");
+import { getSessionUserSettings } from '../../utils/getSessionUserSettings.js';
 const botStartTime = Date.now();
 function formatUptime(ms) {
     const totalSeconds = Math.floor(ms / 1000);
@@ -11,14 +8,14 @@ function formatUptime(ms) {
     return `${hours}h ${minutes}m ${seconds}s`;
 }
 const emojis = ['😎', '🚀', '💥', '🔥', '🤖', '✨', '🧠', '🌀', '🎉', '🍀', '🧃', '👽', '👾'];
-exports.command = {
+export const command = {
     name: 'ping',
     description: 'Check if the bot is alive',
     execute: async (sock, msg) => {
         const jid = msg.key.remoteJid;
         const watermark = '\n\n_➤ nutterxmd_';
         // 🧠 Get session user and settings
-        const sessionData = await (0, getSessionUserSettings_js_1.getSessionUserSettings)(sock);
+        const sessionData = await getSessionUserSettings(sock);
         if (!sessionData?.user || !sessionData?.settings) {
             await sock.sendMessage(jid, {
                 text: `❌ Session not registered. Link your bot via dashboard first.${watermark}`,

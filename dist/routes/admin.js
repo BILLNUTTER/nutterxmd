@@ -1,17 +1,12 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const date_fns_1 = require("date-fns");
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const Payment_1 = __importDefault(require("../models/Payment"));
-const Session_1 = __importDefault(require("../models/Session"));
-const User_1 = __importDefault(require("../models/User"));
-const UserSettings_1 = __importDefault(require("../models/UserSettings"));
-const auth_1 = require("../middleware/auth");
-const router = (0, express_1.Router)();
+import { Router } from 'express';
+import { addDays } from 'date-fns';
+import jwt from 'jsonwebtoken';
+import Payment from '../models/payment';
+import Session from '../models/Session';
+import User from '../models/User';
+import UserSettings from '../models/UserSettings';
+import { adminAuth } from '../middleware/auth';
+const router = Router();
 // 🔐 Admin login using adminKey
 router.post('/login', (req, res) => {
     const { adminKey } = req.body;
@@ -25,7 +20,7 @@ router.post('/login', (req, res) => {
         console.warn('❌ Invalid adminKey attempt');
         return res.status(401).json({ message: 'Unauthorized: Invalid admin key' });
     }
-    const token = jsonwebtoken_1.default.sign({ role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const token = jwt.sign({ role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '1d' });
     console.log('✅ Admin authenticated successfully');
     res.json({
         token,
@@ -35,12 +30,12 @@ router.post('/login', (req, res) => {
     });
 });
 // 🔍 Get pending payments
-router.get('/payments/pending', auth_1.adminAuth, async (_req, res) => {
+router.get('/payments/pending', adminAuth, async (_req, res) => {
     try {
-        const payments = await Payment_1.default.find({ isVerified: false }).sort({ createdAt: -1 });
+        const payments = await Payment.find({ isVerified: false }).sort({ createdAt: -1 });
         const data = await Promise.all(payments.map(async (payment) => {
-            const user = await User_1.default.findById(payment.userId).select('-password');
-            const session = await Session_1.default.findOne({ sessionId: payment.sessionId });
+            const user = await User.findById(payment.userId).select('-password');
+            const session = await Session.findOne({ sessionId: payment.sessionId });
             return {
                 ...payment.toObject(),
                 user: user?.toObject?.() ?? null,
@@ -55,19 +50,19 @@ router.get('/payments/pending', auth_1.adminAuth, async (_req, res) => {
     }
 });
 // ✅ Verify payment
-router.post('/payments/verify', auth_1.adminAuth, async (req, res) => {
+router.post('/payments/verify', adminAuth, async (req, res) => {
     try {
         const { paymentId, adminId = 'admin' } = req.body;
-        const payment = await Payment_1.default.findById(paymentId);
+        const payment = await Payment.findById(paymentId);
         if (!payment)
             return res.status(404).json({ message: 'Payment not found' });
         payment.isVerified = true;
         payment.verifiedBy = adminId;
         await payment.save();
-        const expiryDate = (0, date_fns_1.addDays)(new Date(), 30);
+        const expiryDate = addDays(new Date(), 30);
         await Promise.all([
-            Session_1.default.findOneAndUpdate({ sessionId: payment.sessionId }, { isPaid: true, isActive: true, expiryDate }),
-            User_1.default.findByIdAndUpdate(payment.userId, {
+            Session.findOneAndUpdate({ sessionId: payment.sessionId }, { isPaid: true, isActive: true, expiryDate }),
+            User.findByIdAndUpdate(payment.userId, {
                 isActive: true,
                 expiryDate,
             }),
@@ -80,12 +75,12 @@ router.post('/payments/verify', auth_1.adminAuth, async (req, res) => {
     }
 });
 // 📶 Active sessions
-router.get('/sessions/active', auth_1.adminAuth, async (_req, res) => {
+router.get('/sessions/active', adminAuth, async (_req, res) => {
     try {
-        const sessions = await Session_1.default.find({ isActive: true }).sort({ createdAt: -1 });
+        const sessions = await Session.find({ isActive: true }).sort({ createdAt: -1 });
         const data = await Promise.all(sessions.map(async (session) => {
             try {
-                const user = await User_1.default.findById(session.userId).select('-password');
+                const user = await User.findById(session.userId).select('-password');
                 // Safety check for missing user
                 if (!user) {
                     console.warn(`⚠️ No user found for sessionId: ${session.sessionId}`);
@@ -111,11 +106,11 @@ router.get('/sessions/active', auth_1.adminAuth, async (_req, res) => {
     }
 });
 // 👥 List users
-router.get('/users', auth_1.adminAuth, async (_req, res) => {
+router.get('/users', adminAuth, async (_req, res) => {
     try {
-        const users = await User_1.default.find({}).select('-password').sort({ createdAt: -1 });
+        const users = await User.find({}).select('-password').sort({ createdAt: -1 });
         const result = await Promise.all(users.map(async (user) => {
-            const settings = await UserSettings_1.default.findOne({ userId: user._id.toString() });
+            const settings = await UserSettings.findOne({ userId: user._id.toString() });
             return {
                 ...user.toObject(),
                 settings: settings?.toObject?.() ?? null,
@@ -129,10 +124,10 @@ router.get('/users', auth_1.adminAuth, async (_req, res) => {
     }
 });
 // 📨 Send message (stub)
-router.post('/send-message', auth_1.adminAuth, async (req, res) => {
+router.post('/send-message', adminAuth, async (req, res) => {
     try {
         const { userId, message } = req.body;
-        const user = await User_1.default.findById(userId);
+        const user = await User.findById(userId);
         if (!user)
             return res.status(404).json({ message: 'User not found' });
         console.log(`📨 Message to ${user.username} (${user.phone}): ${message}`);
@@ -144,10 +139,10 @@ router.post('/send-message', auth_1.adminAuth, async (req, res) => {
     }
 });
 // 🔗 Link device (stub)
-router.post('/link-device', auth_1.adminAuth, async (req, res) => {
+router.post('/link-device', adminAuth, async (req, res) => {
     try {
         const { userId } = req.body;
-        const user = await User_1.default.findById(userId);
+        const user = await User.findById(userId);
         if (!user)
             return res.status(404).json({ message: 'User not found' });
         console.log(`🔗 Linking device for ${user.username} (${user.phone})`);
@@ -158,4 +153,4 @@ router.post('/link-device', auth_1.adminAuth, async (req, res) => {
         res.status(500).json({ message: 'Failed to link device' });
     }
 });
-exports.default = router;
+export default router;

@@ -1,14 +1,9 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const User_js_1 = __importDefault(require("../models/User.js"));
-const UserSettings_js_1 = __importDefault(require("../models/UserSettings.js"));
-const router = (0, express_1.Router)();
+import { Router } from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
+import UserSettings from '../models/UserSettings.js';
+const router = Router();
 // 🔐 User Register
 router.post('/register', async (req, res) => {
     try {
@@ -18,15 +13,15 @@ router.post('/register', async (req, res) => {
         }
         const trimmedUsername = username.trim();
         const trimmedEmail = email.trim().toLowerCase();
-        const existingUser = await User_js_1.default.findOne({
+        const existingUser = await User.findOne({
             $or: [{ email: trimmedEmail }, { username: trimmedUsername }],
         });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
-        const salt = await bcryptjs_1.default.genSalt(10);
-        const hashedPassword = await bcryptjs_1.default.hash(password, salt);
-        const user = new User_js_1.default({
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        const user = new User({
             username: trimmedUsername,
             email: trimmedEmail,
             password: hashedPassword,
@@ -34,7 +29,7 @@ router.post('/register', async (req, res) => {
             isActive: false,
         });
         await user.save();
-        const settings = new UserSettings_js_1.default({
+        const settings = new UserSettings({
             userId: user._id.toString(),
             phone: user.phone,
             prefix: '.',
@@ -65,7 +60,7 @@ router.post('/register', async (req, res) => {
             console.error('❌ JWT_SECRET is missing in .env');
             return res.status(500).json({ message: 'Server configuration error' });
         }
-        const token = jsonwebtoken_1.default.sign({ userId: user._id }, jwtSecret, {
+        const token = jwt.sign({ userId: user._id }, jwtSecret, {
             expiresIn: '30d',
         });
         const response = {
@@ -96,11 +91,11 @@ router.post('/login', async (req, res) => {
         if (!username || !password) {
             return res.status(400).json({ message: 'Username and password required' });
         }
-        const user = await User_js_1.default.findOne({ username: username.trim() });
+        const user = await User.findOne({ username: username.trim() });
         if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
-        const isMatch = await bcryptjs_1.default.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
@@ -109,7 +104,7 @@ router.post('/login', async (req, res) => {
             console.error('❌ JWT_SECRET is missing in .env');
             return res.status(500).json({ message: 'Server configuration error' });
         }
-        const token = jsonwebtoken_1.default.sign({ userId: user._id }, jwtSecret, {
+        const token = jwt.sign({ userId: user._id }, jwtSecret, {
             expiresIn: '30d',
         });
         const response = {
@@ -133,4 +128,4 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Server error during login' });
     }
 });
-exports.default = router;
+export default router;

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { addDays } from 'date-fns';
 import jwt from 'jsonwebtoken';
-import Payment from '../models/Payment';
+import Payment from '../models/payment';
 import Session from '../models/Session';
 import User from '../models/User';
 import UserSettings from '../models/UserSettings';
