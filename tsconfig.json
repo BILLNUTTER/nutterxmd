@@ -25,7 +25,8 @@
         "./sockets/**/*.ts",
         "./subscriptions/**/*.ts",
         "./utils/**/*.ts",
-        "./shared/**/*.ts"
+        "./shared/**/*.ts",
+        "./models"
     ],
     "exclude": [
         "node_modules",
