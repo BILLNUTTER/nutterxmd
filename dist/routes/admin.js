@@ -1,36 +1,38 @@
 import { Router } from 'express';
 import { addDays } from 'date-fns';
 import jwt from 'jsonwebtoken';
-// ✅ These will work in Heroku and local ESM environments:
 import Payment from '../models/payment.js';
 import Session from '../models/Session.js';
 import User from '../models/User.js';
 import UserSettings from '../models/UserSettings.js';
 import { adminAuth } from '../middlewares/auth.js';
 const router = Router();
-// 🔐 Admin login using adminKey
+// 🔐 Admin login using ADMIN_KEY
 router.post('/login', (req, res) => {
     const { adminKey } = req.body;
-    console.log(`🔐 [POST] /admin/login attempt with key: ${adminKey ? '[PROVIDED]' : '[MISSING]'}`);
-    const expectedKey = process.env.ADMIN_KEY;
+    const expectedKey = process.env.ADMIN_KEY?.trim();
+    const jwtSecret = process.env.JWT_SECRET;
+    console.log(`🔐 [POST] /admin/login attempt`);
     if (!expectedKey) {
-        console.error('❌ ADMIN_KEY not defined in .env');
+        console.error('❌ ADMIN_KEY not set in Heroku config.');
         return res.status(500).json({ message: 'Server misconfiguration' });
     }
-    if (!adminKey || adminKey !== expectedKey) {
+    if (!adminKey || adminKey.trim() !== expectedKey) {
         console.warn('❌ Invalid adminKey attempt');
         return res.status(401).json({ message: 'Unauthorized: Invalid admin key' });
     }
-    const token = jwt.sign({ role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    if (!jwtSecret) {
+        console.error('❌ JWT_SECRET not set in Heroku config.');
+        return res.status(500).json({ message: 'Server misconfiguration: missing JWT secret' });
+    }
+    const token = jwt.sign({ role: 'admin' }, jwtSecret, { expiresIn: '1d' });
     console.log('✅ Admin authenticated successfully');
     res.json({
         token,
-        admin: {
-            role: 'admin',
-        },
+        admin: { role: 'admin' },
     });
 });
-// 🔍 Get pending payments
+// 🔍 Pending payments
 router.get('/payments/pending', adminAuth, async (_req, res) => {
     try {
         const payments = await Payment.find({ isVerified: false }).sort({ createdAt: -1 });
@@ -82,13 +84,9 @@ router.get('/sessions/active', adminAuth, async (_req, res) => {
         const data = await Promise.all(sessions.map(async (session) => {
             try {
                 const user = await User.findById(session.userId).select('-password');
-                // Safety check for missing user
-                if (!user) {
-                    console.warn(`⚠️ No user found for sessionId: ${session.sessionId}`);
-                }
                 return {
                     ...session.toObject(),
-                    user: user ? user.toObject() : { username: 'Unknown', phone: 'N/A' },
+                    user: user?.toObject() ?? { username: 'Unknown', phone: 'N/A' },
                 };
             }
             catch (innerErr) {
@@ -114,7 +112,7 @@ router.get('/users', adminAuth, async (_req, res) => {
             const settings = await UserSettings.findOne({ userId: user._id.toString() });
             return {
                 ...user.toObject(),
-                settings: settings?.toObject?.() ?? null,
+                settings: settings?.toObject() ?? null,
             };
         }));
         res.json(result);
@@ -131,7 +129,7 @@ router.post('/send-message', adminAuth, async (req, res) => {
         const user = await User.findById(userId);
         if (!user)
             return res.status(404).json({ message: 'User not found' });
-        console.log(`📨 Message to ${user.username} (${user.phone}): ${message}`);
+        console.log(`📨 [Stub] Message to ${user.username} (${user.phone}): ${message}`);
         res.json({ message: 'Message sent (log only)' });
     }
     catch (err) {
@@ -146,7 +144,7 @@ router.post('/link-device', adminAuth, async (req, res) => {
         const user = await User.findById(userId);
         if (!user)
             return res.status(404).json({ message: 'User not found' });
-        console.log(`🔗 Linking device for ${user.username} (${user.phone})`);
+        console.log(`🔗 [Stub] Linking device for ${user.username} (${user.phone})`);
         res.json({ message: 'Device linking initiated (stub only)' });
     }
     catch (err) {

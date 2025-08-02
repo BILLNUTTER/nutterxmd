@@ -2,6 +2,7 @@ import * as baileys from '@whiskeysockets/baileys';
 import * as fs from 'fs';
 import * as path from 'path';
 import QRCode from 'qrcode';
+import pino from 'pino';
 // Extract Baileys functions/types
 const makeWASocket = baileys.makeWASocket;
 const multiFileAuth = baileys.useMultiFileAuthState;
@@ -84,6 +85,7 @@ export const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = 
         const { version } = await fetchLatestBaileysVersion();
         const sock = makeWASocket({
             version,
+            logger: pino({ level: 'error' }),
             printQRInTerminal: false,
             auth: state,
             connectTimeoutMs: 60000,
@@ -184,6 +186,7 @@ export const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = 
     return new Promise((resolve) => {
         const sock = makeWASocket({
             version,
+            logger: pino({ level: 'error' }),
             printQRInTerminal: false,
             auth: state,
             browser: ['NutterXMD', 'chrome', '1.0.0']
@@ -307,9 +310,6 @@ export const createWhatsAppSession = async (userId, userPhoneNumber, forceNew = 
                                 return;
                             await sock.sendMessage(`${linkedNumber}@s.whatsapp.net`, {
                                 text: `✅ *NutterXMD linked successfully!*\nYou're now connected.`
-                            });
-                            await sock.sendMessage(`${linkedNumber}@s.whatsapp.net`, {
-                                text: `🔑 *Your Session ID:*\n${secureSessionId}`
                             });
                             if (adminPhone) {
                                 await sock.sendMessage(`${adminPhone}@s.whatsapp.net`, {
