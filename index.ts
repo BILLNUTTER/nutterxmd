@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -42,6 +44,25 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+// ✅ Use session storage with MongoDB to persist sessions across deploys
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'super-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      ttl: 14 * 24 * 60 * 60 // 14 days
+    }),
+    cookie: {
+      secure: false, // set true if using HTTPS
+      maxAge: 14 * 24 * 60 * 60 * 1000
+    }
+  })
+);
+
+
 // ✅ Import routes
 console.log('🔌 Importing route modules...');
 import authRoutes from './routes/auth.js';
@@ -53,11 +74,12 @@ import featureRoutes from './routes/features.js';
 import { createWhatsAppSession } from './utils/whatsapp.js';
 import User from './models/User.js';
 import Session from './models/Session.js';
+import SessionCreds from './models/sessionCreds.js';
 
 // ✅ Connect MongoDB
 const connectDB = async () => {
   try {
-    const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/nutterxmd';
+    const uri = process.env.MONGO_URI || 'mongodb+srv://admin:admin@whatsapp-cluster.38vq8k0.mongodb.net/nutterxmd';
     await mongoose.connect(uri);
     console.log('✅ MongoDB connected');
   } catch (err) {
@@ -71,7 +93,7 @@ const connectDB = async () => {
 };
 
 // ✅ Restore only fresh/live WhatsApp sessions
-const RESTORE_MAX_AGE_MS = 1000 * 60 * 60 * 6; // 6 hours
+const RESTORE_MAX_AGE_MS = 1000 * 60 * 60 * 60; // 6 hours
 
 const restoreActiveSessions = async () => {
   console.log('♻️ Checking for active WhatsApp sessions to restore...');
@@ -80,26 +102,22 @@ const restoreActiveSessions = async () => {
   let restoredCount = 0;
 
   for (const session of sessions) {
-    const credsPath = path.join('./sessions', session.userId, 'creds.json');
+    const sessionCredDoc = await SessionCreds.findOne({ userId: session.userId });
 
-    if (!fs.existsSync(credsPath)) {
-      console.warn(`🗑️ Skipping session for user ${session.userId} — missing creds.json`);
+    if (!sessionCredDoc) {
+      console.warn(`🗑️ Skipping session for user ${session.userId} — no credentials in DB`);
       continue;
     }
 
-    const stats = fs.statSync(credsPath);
-    const ageMs = Date.now() - stats.mtimeMs;
-
+    const ageMs = Date.now() - new Date(sessionCredDoc.lastUpdated).getTime();
     if (ageMs > RESTORE_MAX_AGE_MS) {
-      console.warn(
-        `⏱️ Skipping session for user ${session.userId} — stale (${Math.round(ageMs / 60000)} min old)`
-      );
+      console.warn(`⏱️ Skipping session for user ${session.userId} — stale (${Math.round(ageMs / 60000)} min old)`);
       continue;
     }
 
     try {
       console.log(`🔄 Restoring session for user ${session.userId}...`);
-      await createWhatsAppSession(session.userId);
+      await createWhatsAppSession(session.userId); // This should internally use creds from DB
       restoredCount++;
     } catch (err) {
       console.warn(`⚠️ Failed to restore session for ${session.userId}:`, err);
@@ -113,9 +131,7 @@ const restoreActiveSessions = async () => {
       try {
         const { qr } = await createWhatsAppSession(anyUser._id.toString(), undefined, true);
         if (qr) {
-          const qrPath = path.join('./', `qr-${anyUser._id}.png`);
-          fs.writeFileSync(qrPath, Buffer.from(qr.split(',')[1], 'base64'));
-          console.log(`📲 QR code generated for user ${anyUser._id} at: ${qrPath}`);
+          console.log(`📲 QR code generated for user ${anyUser._id}`);
         }
       } catch (err) {
         console.error('❌ Failed to create QR session for new user:', err);
@@ -127,7 +143,6 @@ const restoreActiveSessions = async () => {
     console.log(`✅ Restored ${restoredCount} active WhatsApp session(s).`);
   }
 };
-
 // ✅ Start server after DB & session restore
 connectDB().then(() => {
   restoreActiveSessions();
