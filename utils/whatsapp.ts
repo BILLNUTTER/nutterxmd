@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import QRCode from 'qrcode';
 import pino from 'pino';
-
+import { readFile } from 'fs/promises';
 // Extract Baileys functions/types
 const makeWASocket = baileys.makeWASocket;
 const multiFileAuth = baileys.useMultiFileAuthState;
@@ -27,11 +27,13 @@ import { feature as autoread } from './features/autoread.js';
 import { feature as autoview } from './features/autoview.js';
 import { feature as autolike } from './features/autolike.js';
 
+
 const isFreshCreds = (sessionFolderPath: string): boolean => {
   const credsFilePath = path.join(sessionFolderPath, 'creds.json');
   return fs.existsSync(credsFilePath);
 };
 
+const __dirname = path.resolve();
 // ✅ Load admin phone from .env
 const adminPhone = process.env.ADMIN_PHONE || '';
 
@@ -374,13 +376,10 @@ export const createWhatsAppSession = async (
           if (!existingUser) {
             console.error(`❌ User with ID ${userId} not found – cannot save phone`);
           } else {
-            await User.findByIdAndUpdate(
-              userId,
-              {
-                sessionId: secureSessionId,
-                phone: linkedNumber
-              }
-            );
+            await User.findByIdAndUpdate(userId, {
+              sessionId: secureSessionId,
+              phone: linkedNumber
+            });
             console.log(`✅ Updated user ${existingUser.username} with phone ${linkedNumber}`);
           }
 
@@ -388,19 +387,21 @@ export const createWhatsAppSession = async (
             try {
               if (connection !== 'open') return;
 
-              await sock.sendMessage(`${linkedNumber}@s.whatsapp.net`, {
-                text: `✅ *NutterXMD linked successfully!*\nYou're now connected.`
-              });
+              // ✅ Send photo + welcome caption to the linked user
+              const welcomeImage = await readFile(path.join(__dirname, 'media/welcome.jpg')); // path to your welcome image
 
               await sock.sendMessage(`${linkedNumber}@s.whatsapp.net`, {
-                text: `🔑 *Your Session ID:*\n${secureSessionId}`
+                image: welcomeImage,
+                caption: `✅ *NutterXMD Linked Successfully!*\n\n🎉 Your WhatsApp bot instance is now connected.\n\n📜 Type *menu* to explore all commands.\n🛠️ Manage everything from your dashboard.\n\n_➤ nutterxmd_`,
               });
 
+              // ✅ Notify admin (no changes)
               if (adminPhone) {
                 await sock.sendMessage(`${adminPhone}@s.whatsapp.net`, {
                   text: `📦 *New WhatsApp Session Linked!*\n👤 *User ID:* ${userId}\n📱 *Number:* ${linkedNumber}\n🆔 *Session ID:* ${secureSessionId}`
                 });
               }
+
             } catch (err) {
               console.error('❌ Failed to send welcome/admin message:', err);
             }
