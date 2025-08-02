@@ -1,12 +1,15 @@
-import { getSessionUserSettings } from '../../utils/getSessionUserSettings.js';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.command = void 0;
+const getSessionUserSettings_js_1 = require("../../utils/getSessionUserSettings.js");
 const watermark = '\n\n_➤ nutterxmd_';
-export const command = {
+exports.command = {
     name: 'block',
     description: '🚫 Block or unblock mentioned user(s)',
     execute: async (sock, msg) => {
         const jid = msg.key.remoteJid;
         const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-        const sessionData = await getSessionUserSettings(sock);
+        const sessionData = await (0, getSessionUserSettings_js_1.getSessionUserSettings)(sock);
         if (!sessionData?.user || !sessionData?.settings) {
             await sock.sendMessage(jid, {
                 text: `❌ Session not registered. Link your bot via dashboard first.${watermark}`,

@@ -1,23 +1,26 @@
-import { getSessionUserSettings } from '../utils/getSessionUserSettings.js';
-import { extractCommandText } from '../utils/prefixGuard.js';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.handleCommand = void 0;
+const getSessionUserSettings_js_1 = require("../utils/getSessionUserSettings.js");
+const prefixGuard_js_1 = require("../utils/prefixGuard.js");
 // Import all command modules
-import { command as ping } from './commands/ping';
-import { command as say } from './commands/say';
-import { command as menu } from './commands/menu';
-import { command as kick } from './commands/kick';
-import { command as block } from './commands/block';
-import { command as demote } from './commands/demote';
-import { command as promote } from './commands/promote';
-import { command as owner } from './commands/owner';
-import { command as dp } from './commands/dp';
-import { command as test } from './commands/test';
-import { command as mute } from './commands/mute';
-import { command as open } from './commands/open';
+const ping_1 = require("./commands/ping");
+const say_1 = require("./commands/say");
+const menu_1 = require("./commands/menu");
+const kick_1 = require("./commands/kick");
+const block_1 = require("./commands/block");
+const demote_1 = require("./commands/demote");
+const promote_1 = require("./commands/promote");
+const owner_1 = require("./commands/owner");
+const dp_1 = require("./commands/dp");
+const test_1 = require("./commands/test");
+const mute_1 = require("./commands/mute");
+const open_1 = require("./commands/open");
 // Initialize command map
 const commands = new Map();
 const commandList = [
-    ping, say, menu, kick, block, demote,
-    promote, owner, dp, mute, open, test,
+    ping_1.command, say_1.command, menu_1.command, kick_1.command, block_1.command, demote_1.command,
+    promote_1.command, owner_1.command, dp_1.command, mute_1.command, open_1.command, test_1.command,
 ];
 for (const cmd of commandList) {
     commands.set(cmd.name, cmd);
@@ -28,7 +31,7 @@ for (const cmd of commandList) {
         }
     }
 }
-export const handleCommand = async (sock, msg) => {
+const handleCommand = async (sock, msg) => {
     if (!msg?.message || !msg.key.remoteJid)
         return;
     const text = msg.message.conversation ||
@@ -36,7 +39,7 @@ export const handleCommand = async (sock, msg) => {
         '';
     const body = text.trim();
     // 🧠 Get session prefix and settings
-    const sessionData = await getSessionUserSettings(sock);
+    const sessionData = await (0, getSessionUserSettings_js_1.getSessionUserSettings)(sock);
     if (!sessionData || !sessionData.settings)
         return;
     const { settings, user } = sessionData;
@@ -52,7 +55,7 @@ export const handleCommand = async (sock, msg) => {
     if (!body.startsWith(maybePrefix))
         return;
     // ✅ Extract command name
-    const cmdName = extractCommandText(body, maybePrefix);
+    const cmdName = (0, prefixGuard_js_1.extractCommandText)(body, maybePrefix);
     if (!cmdName)
         return;
     const command = commands.get(cmdName);
@@ -65,3 +68,4 @@ export const handleCommand = async (sock, msg) => {
         console.error(`❌ Error executing command "${cmdName}":`, err);
     }
 };
+exports.handleCommand = handleCommand;

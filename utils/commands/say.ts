@@ -14,11 +14,10 @@ export const command: BotCommand = {
 
   execute: async (sock: WASocket, msg: proto.IWebMessageInfo): Promise<void> => {
     const jid = msg.key.remoteJid!;
-
     const session = await getSessionUserSettings(sock);
     if (!session || !session.settings) return;
-    const prefix = session.settings.prefix || '.';
 
+    const prefix = session.settings.prefix || '.';
     const rawText =
       msg.message?.conversation ||
       msg.message?.extendedTextMessage?.text ||
@@ -44,10 +43,12 @@ export const command: BotCommand = {
 
     const tts = new gTTS(sayMessage, 'en');
 
-    tts.save(ttsPath, async (err) => {
+    tts.save(ttsPath, async (err: Error | null) => {
       if (err) {
         console.error('TTS Error:', err);
-        await sock.sendMessage(jid, { text: `❌ Failed to generate audio.\n\n${WATERMARK}` });
+        await sock.sendMessage(jid, {
+          text: `❌ Failed to generate audio.\n\n${WATERMARK}`
+        });
         return;
       }
 
@@ -63,7 +64,7 @@ export const command: BotCommand = {
               body: '',
               mediaType: 2,
               showAdAttribution: true,
-              sourceUrl: 'https://wa.me/254758891491',
+              sourceUrl: 'https://wa.me/254758891491'
             }
           }
         });

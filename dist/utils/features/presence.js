@@ -1,5 +1,11 @@
-import User from '../../models/User.js';
-import UserSettings from '../../models/UserSettings.js';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.feature = void 0;
+const User_js_1 = __importDefault(require("../../models/User.js"));
+const UserSettings_js_1 = __importDefault(require("../../models/UserSettings.js"));
 const ALLOWED_PRESENCES = ['typing', 'recording', 'available'];
 const PRESENCE_COOLDOWN_MS = 3000;
 const lastPresence = {};
@@ -9,7 +15,7 @@ function isSocketOpen(sock) {
 function isIndividualChat(jid) {
     return jid.endsWith('@s.whatsapp.net');
 }
-export const feature = {
+exports.feature = {
     name: 'presence',
     enabled: () => true,
     handle: async (sock, msg) => {
@@ -21,12 +27,12 @@ export const feature = {
         if (!isIndividualChat(jid))
             return;
         const sessionPhone = sock.user?.id?.split('@')[0];
-        const sessionUser = await User.findOne({ phone: sessionPhone });
+        const sessionUser = await User_js_1.default.findOne({ phone: sessionPhone });
         if (!sessionUser) {
             console.log(`[presence] ❌ No session user found for ${sessionPhone}`);
             return;
         }
-        const settings = await UserSettings.findOne({ userId: sessionUser._id });
+        const settings = await UserSettings_js_1.default.findOne({ userId: sessionUser._id });
         const mode = settings?.features?.presence;
         if (!mode) {
             console.log(`[presence] ⚠️ No presence mode set for user ${sessionPhone}`);

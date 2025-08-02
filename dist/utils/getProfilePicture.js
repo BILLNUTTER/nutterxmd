@@ -1,7 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getProfilePictureUrl = void 0;
 /**
  * Safe profile picture fetcher
  */
-export const getProfilePictureUrl = async (sock, jid) => {
+const getProfilePictureUrl = async (sock, jid) => {
     try {
         const url = await sock.profilePictureUrl(jid, 'image');
         return url ?? null; // convert undefined to null
@@ -10,3 +13,4 @@ export const getProfilePictureUrl = async (sock, jid) => {
         return null;
     }
 };
+exports.getProfilePictureUrl = getProfilePictureUrl;

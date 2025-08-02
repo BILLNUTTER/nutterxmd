@@ -1,13 +1,16 @@
-import { ADMIN_PHONE } from '../../shared/constants';
-import { getSessionUserSettings } from '../getSessionUserSettings';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.command = void 0;
+const constants_1 = require("../../shared/constants");
+const getSessionUserSettings_1 = require("../getSessionUserSettings");
 const watermark = '\n\n__➤ nutterxmd_';
-export const command = {
+exports.command = {
     name: 'promote',
     description: 'Promote mentioned user(s) to group admin',
     execute: async (sock, msg) => {
         const jid = msg.key.remoteJid;
         const senderJid = msg.key.participant || msg.key.remoteJid;
-        const session = await getSessionUserSettings(sock);
+        const session = await (0, getSessionUserSettings_1.getSessionUserSettings)(sock);
         if (!session || !session.settings)
             return;
         const prefix = session.settings.prefix || '.';
@@ -17,7 +20,7 @@ export const command = {
             return;
         const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
         const isGroup = jid.endsWith('@g.us');
-        const isOwner = ADMIN_PHONE && senderJid.includes(ADMIN_PHONE);
+        const isOwner = constants_1.ADMIN_PHONE && senderJid.includes(constants_1.ADMIN_PHONE);
         if (!isGroup) {
             await sock.sendMessage(jid, {
                 text: `❌ This command only works in groups.${watermark}`,

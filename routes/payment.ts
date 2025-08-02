@@ -39,7 +39,7 @@ router.get('/status', auth, async (req: Request, res: Response) => {
   try {
     const userId = req.userId!;
     const payments = await Payment.find({ userId }).sort({ createdAt: -1 });
-    
+
     res.json(payments);
   } catch (error) {
     console.error('Payment status error:', error);

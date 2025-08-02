@@ -1,14 +1,17 @@
-import { getSessionUserSettings } from '../../utils/getSessionUserSettings.js';
-import { ADMIN_PHONE } from '../../shared/constants';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.command = void 0;
+const getSessionUserSettings_js_1 = require("../../utils/getSessionUserSettings.js");
+const constants_1 = require("../../shared/constants");
 const watermark = '\n\n_➤ nutterxmd_';
-export const command = {
+exports.command = {
     name: 'demote',
     description: '⬇️ Demote mentioned user(s) from group admin',
     execute: async (sock, msg) => {
         const groupId = msg.key.remoteJid;
         const senderJid = msg.key.participant || msg.key.remoteJid;
         const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-        const sessionData = await getSessionUserSettings(sock);
+        const sessionData = await (0, getSessionUserSettings_js_1.getSessionUserSettings)(sock);
         if (!sessionData?.user || !sessionData?.settings) {
             await sock.sendMessage(groupId, {
                 text: `❌ Session not registered. Link your bot via dashboard first.${watermark}`,
@@ -20,7 +23,7 @@ export const command = {
         if (!text.startsWith(userPrefix))
             return;
         const isGroup = groupId.endsWith('@g.us');
-        const isOwner = senderJid.includes(ADMIN_PHONE);
+        const isOwner = senderJid.includes(constants_1.ADMIN_PHONE);
         if (!isGroup) {
             await sock.sendMessage(groupId, {
                 text: `❌ This command only works in *groups*.${watermark}`,

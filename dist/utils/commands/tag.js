@@ -1,5 +1,8 @@
-import { getRecentMessages } from '../messageCache';
-import { getSessionUserSettings } from '../getSessionUserSettings';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.command = void 0;
+const messageCache_1 = require("../messageCache");
+const getSessionUserSettings_1 = require("../getSessionUserSettings");
 const WATERMARK = '\n\n_➤ nutterxmd_';
 function extractText(msg) {
     return (msg.message?.conversation ||
@@ -12,13 +15,13 @@ function formatJid(jid) {
 function numberedList(jids) {
     return jids.map((jid, i) => `${i + 1}. ${formatJid(jid)}`).join('\n');
 }
-export const command = {
+exports.command = {
     name: 'tag',
     description: 'Group tagging commands: tagall, hidetag, tagadmin, tagactive, taginactive',
     execute: async (sock, msg) => {
         const jid = msg.key.remoteJid;
         const senderName = msg.pushName || 'Someone mysterious';
-        const session = await getSessionUserSettings(sock);
+        const session = await (0, getSessionUserSettings_1.getSessionUserSettings)(sock);
         if (!session || !session.settings)
             return;
         const prefix = session.settings.prefix || '.';
@@ -61,7 +64,7 @@ export const command = {
                 break;
             }
             case 'tagactive': {
-                const recentMessages = getRecentMessages(jid) || [];
+                const recentMessages = (0, messageCache_1.getRecentMessages)(jid) || [];
                 const threshold = Date.now() - 30 * 60 * 1000;
                 const activeSenders = new Set(recentMessages
                     .filter((m) => m.timestamp >= threshold)
@@ -76,7 +79,7 @@ export const command = {
                 break;
             }
             case 'taginactive': {
-                const recentMessages = getRecentMessages(jid) || [];
+                const recentMessages = (0, messageCache_1.getRecentMessages)(jid) || [];
                 const threshold = Date.now() - 30 * 60 * 1000;
                 const activeSenders = new Set(recentMessages
                     .filter((m) => m.timestamp >= threshold)

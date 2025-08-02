@@ -1,19 +1,25 @@
-import { downloadMediaMessage } from '@whiskeysockets/baileys';
-import { getCachedMessage } from '../messageCache';
-import User from '../../models/User.js';
-import UserSettings from '../../models/UserSettings.js';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.feature = void 0;
+const baileys_1 = require("@whiskeysockets/baileys");
+const messageCache_1 = require("../messageCache");
+const User_js_1 = __importDefault(require("../../models/User.js"));
+const UserSettings_js_1 = __importDefault(require("../../models/UserSettings.js"));
 const WATERMARK = '\n\n' + ' '.repeat(30) + '| nutterxmd';
-export const feature = {
+exports.feature = {
     name: 'antidelete',
     enabled: () => true, // Always load; use settings check below
     handle: async (sock, msg) => {
         const sessionPhone = sock.user?.id?.split('@')[0];
-        const sessionUser = await User.findOne({ phone: sessionPhone });
+        const sessionUser = await User_js_1.default.findOne({ phone: sessionPhone });
         if (!sessionUser) {
             console.log(`[antidelete] ❌ No session user found for ${sessionPhone}`);
             return;
         }
-        const settings = await UserSettings.findOne({ userId: sessionUser._id });
+        const settings = await UserSettings_js_1.default.findOne({ userId: sessionUser._id });
         // ⛔ Feature disabled for this user
         if (!settings?.features?.antiDelete) {
             return;
@@ -27,7 +33,7 @@ export const feature = {
         const fromId = deletedKey?.participant || deletedKey?.remoteJid;
         if (!remoteJid || !messageId || !fromId)
             return;
-        const original = getCachedMessage(remoteJid, messageId);
+        const original = (0, messageCache_1.getCachedMessage)(remoteJid, messageId);
         if (!original?.message)
             return;
         const senderTag = `@${fromId.split('@')[0]}`;
@@ -37,7 +43,7 @@ export const feature = {
         const msgContent = original.message;
         try {
             const quoted = { key: original.key, message: msgContent };
-            const getMediaBuffer = async () => await downloadMediaMessage(quoted, 'buffer', {
+            const getMediaBuffer = async () => await (0, baileys_1.downloadMediaMessage)(quoted, 'buffer', {
                 // @ts-expect-error: reuploadRequest exists at runtime but is not in types
                 reuploadRequest: sock.fetchMessagesFromWA,
             });

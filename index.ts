@@ -39,12 +39,12 @@ app.use(express.json());
 
 // ✅ Import routes
 console.log('🔌 Importing route modules...');
-import authRoutes from './routes/auth';
-import whatsappRoutes from './routes/whatsapp';
-import paymentRoutes from './routes/payment';
-import dashboardRoutes from './routes/dashboard';
-import adminRoutes from './routes/admin';
-import featureRoutes from './routes/features';
+import authRoutes from './routes/auth.js';
+import whatsappRoutes from './routes/whatsapp.js';
+import paymentRoutes from './routes/payment.js';
+import dashboardRoutes from './routes/dashboard.js';
+import adminRoutes from './routes/admin.js';
+import featureRoutes from './routes/features.js';
 import { createWhatsAppSession } from './utils/whatsapp.js';
 import User from './models/User.js';
 import Session from './models/Session.js';

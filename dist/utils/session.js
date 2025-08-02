@@ -1,5 +1,8 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateSecureSessionId = void 0;
 // ✅ Generate secure session ID with embedded pair code
-export const generateSecureSessionId = () => {
+const generateSecureSessionId = () => {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
     const digits = '0123456789';
@@ -17,3 +20,4 @@ export const generateSecureSessionId = () => {
     }
     return `nutter-xmd-${pairCode}-${sessionString}`;
 };
+exports.generateSecureSessionId = generateSecureSessionId;

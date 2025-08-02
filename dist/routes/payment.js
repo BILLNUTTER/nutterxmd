@@ -1,19 +1,24 @@
-import { Router } from 'express';
-import Payment from '../models/Payment.js';
-import User from '../models/User.js';
-import { auth } from '../middleware/auth.js';
-const router = Router();
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const Payment_js_1 = __importDefault(require("../models/Payment.js"));
+const User_js_1 = __importDefault(require("../models/User.js"));
+const auth_js_1 = require("../middleware/auth.js");
+const router = (0, express_1.Router)();
 // Submit payment for verification
-router.post('/submit', auth, async (req, res) => {
+router.post('/submit', auth_js_1.auth, async (req, res) => {
     try {
         const userId = req.userId;
         const { mpesaCode, amount } = req.body;
-        const user = await User.findById(userId);
+        const user = await User_js_1.default.findById(userId);
         if (!user || !user.sessionId) {
             return res.status(400).json({ message: 'No session found' });
         }
         // Create payment record
-        const payment = new Payment({
+        const payment = new Payment_js_1.default({
             userId,
             sessionId: user.sessionId,
             mpesaCode,
@@ -29,10 +34,10 @@ router.post('/submit', auth, async (req, res) => {
     }
 });
 // Get user's payment status
-router.get('/status', auth, async (req, res) => {
+router.get('/status', auth_js_1.auth, async (req, res) => {
     try {
         const userId = req.userId;
-        const payments = await Payment.find({ userId }).sort({ createdAt: -1 });
+        const payments = await Payment_js_1.default.find({ userId }).sort({ createdAt: -1 });
         res.json(payments);
     }
     catch (error) {
@@ -40,4 +45,4 @@ router.get('/status', auth, async (req, res) => {
         res.status(500).json({ message: 'Failed to get payment status' });
     }
 });
-export default router;
+exports.default = router;

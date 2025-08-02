@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getRecentMessages = exports.getCachedMessage = exports.saveActiveMessage = exports.saveMessage = void 0;
 // In-memory cache for full messages (anti-delete), using: remoteJid_messageId
 const messageCache = new Map();
 // Activity tracker for groups (sender + timestamp)
@@ -6,7 +9,7 @@ const MAX_ACTIVITY_ENTRIES = 100;
 /**
  * Save a full message (used for anti-delete recovery)
  */
-export const saveMessage = (msg) => {
+const saveMessage = (msg) => {
     const remoteJid = msg.key?.remoteJid;
     const messageId = msg.key?.id;
     if (!remoteJid || !messageId)
@@ -14,10 +17,11 @@ export const saveMessage = (msg) => {
     const key = `${remoteJid}_${messageId}`;
     messageCache.set(key, msg);
 };
+exports.saveMessage = saveMessage;
 /**
  * Save activity info (used for tagactive/taginactive)
  */
-export const saveActiveMessage = (remoteJid, sender, timestamp) => {
+const saveActiveMessage = (remoteJid, sender, timestamp) => {
     if (!remoteJid.endsWith('@g.us'))
         return;
     if (!groupActivityCache[remoteJid]) {
@@ -29,16 +33,19 @@ export const saveActiveMessage = (remoteJid, sender, timestamp) => {
         groupActivityCache[remoteJid] = groupActivityCache[remoteJid].slice(-MAX_ACTIVITY_ENTRIES);
     }
 };
+exports.saveActiveMessage = saveActiveMessage;
 /**
  * Retrieve a cached message (anti-delete)
  */
-export const getCachedMessage = (remoteJid, id) => {
+const getCachedMessage = (remoteJid, id) => {
     const key = `${remoteJid}_${id}`;
     return messageCache.get(key);
 };
+exports.getCachedMessage = getCachedMessage;
 /**
  * Get recent activity in a group (used by tagactive/taginactive)
  */
-export const getRecentMessages = (groupJid) => {
+const getRecentMessages = (groupJid) => {
     return groupActivityCache[groupJid] || [];
 };
+exports.getRecentMessages = getRecentMessages;
