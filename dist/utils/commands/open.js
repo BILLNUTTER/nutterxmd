@@ -1,4 +1,4 @@
-import { getSessionUserSettings } from '../getSessionUserSettings';
+import { getSessionUserSettings } from '../getSessionUserSettings.js';
 const watermark = '| nutterxmd';
 export const command = {
     name: 'open',

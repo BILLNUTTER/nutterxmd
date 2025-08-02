@@ -1,5 +1,5 @@
-import User from '../../models/User';
-import UserSettings from '../../models/UserSettings';
+import User from '../../models/User.js';
+import UserSettings from '../../models/UserSettings.js';
 export const feature = {
     name: 'autolike',
     enabled: () => true,

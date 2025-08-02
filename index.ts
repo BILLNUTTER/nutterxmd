@@ -4,6 +4,11 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+// ✅ Fix __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ✅ Load .env file early
 const envPath = path.resolve(__dirname, '../.env');
@@ -66,7 +71,6 @@ const connectDB = async () => {
 };
 
 // ✅ Restore only fresh/live WhatsApp sessions
-// ⏳ Restore active sessions or create new one if none found
 const RESTORE_MAX_AGE_MS = 1000 * 60 * 60 * 6; // 6 hours
 
 const restoreActiveSessions = async () => {
@@ -104,7 +108,7 @@ const restoreActiveSessions = async () => {
 
   if (restoredCount === 0) {
     console.warn('🆕 No live sessions restored. Creating a new one with QR for a user...');
-    const anyUser = await User.findOne({}); // You can filter or prioritize here
+    const anyUser = await User.findOne({});
     if (anyUser) {
       try {
         const { qr } = await createWhatsAppSession(anyUser._id.toString(), undefined, true);
@@ -128,7 +132,6 @@ const restoreActiveSessions = async () => {
 connectDB().then(() => {
   restoreActiveSessions();
 
-  // ✅ Mount API routes
   console.log('🚏 Registering API routes...');
   app.use('/api/auth', authRoutes);
   app.use('/api/whatsapp', whatsappRoutes);
@@ -137,17 +140,14 @@ connectDB().then(() => {
   app.use('/api/admin', adminRoutes);
   app.use('/api/features', featureRoutes);
 
-  // ✅ Health check route
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
   });
 
-  // ❌ Handle unknown routes
   app.use('*', (_req, res) => {
     res.status(404).json({ message: 'API route not found' });
   });
 
-  // ✅ Start server
   app.listen(PORT, () => {
     console.log(`🚀 NutterXMD Backend running at http://localhost:${PORT}`);
   });

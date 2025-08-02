@@ -1,7 +1,7 @@
 import { WASocket, proto } from '@whiskeysockets/baileys';
-import { FeatureHandler } from '../../shared/types';
-import User from '../../models/User';
-import UserSettings from '../../models/UserSettings';
+import { FeatureHandler } from '../../shared/types.js';
+import User from '../../models/User.js';
+import UserSettings from '../../models/UserSettings.js';
 
 export const feature: FeatureHandler = {
     name: 'autoview',

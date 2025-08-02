@@ -1,5 +1,5 @@
-import { getSessionUserSettings } from '../../utils/getSessionUserSettings';
-import { ADMIN_PHONE } from '../../shared/constants';
+import { getSessionUserSettings } from '../../utils/getSessionUserSettings.js';
+import { ADMIN_PHONE } from '../../shared/constants.js';
 const watermark = '\n\n_➤ nutterxmd_';
 export const command = {
     name: 'kick',

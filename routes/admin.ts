@@ -6,7 +6,7 @@ import Payment from '../models/payment.js';
 import Session from '../models/Session.js';
 import User from '../models/User.js';
 import UserSettings from '../models/UserSettings.js';
-import { adminAuth } from '../middleware/auth.js';
+import { adminAuth } from '../middlewares/auth.js';
 
 const router = Router();
 

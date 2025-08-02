@@ -1,6 +1,6 @@
 import { WASocket, proto, downloadMediaMessage } from '@whiskeysockets/baileys';
-import { FeatureHandler } from '../../shared/types';
-import { getCachedMessage } from '../messageCache';
+import { FeatureHandler } from '../../shared/types.js';
+import { getCachedMessage } from '../messageCache.js';
 import User from '../../models/User.js';
 import UserSettings from '../../models/UserSettings.js';
 

@@ -1,21 +1,21 @@
 import { WASocket, proto } from '@whiskeysockets/baileys';
-import { BotCommand } from '../shared/types';
+import { BotCommand } from '../shared/types.js';
 import { getSessionUserSettings } from '../utils/getSessionUserSettings.js';
 import { extractCommandText } from '../utils/prefixGuard.js';
 
 // Import all command modules
-import { command as ping } from './commands/ping';
-import { command as say } from './commands/say';
-import { command as menu } from './commands/menu';
-import { command as kick } from './commands/kick';
-import { command as block } from './commands/block';
-import { command as demote } from './commands/demote';
-import { command as promote } from './commands/promote';
-import { command as owner } from './commands/owner';
-import { command as dp } from './commands/dp';
-import { command as test } from './commands/test';
-import { command as mute } from './commands/mute';
-import { command as open } from './commands/open';
+import { command as ping } from './commands/ping.js';
+import { command as say } from './commands/say.js';
+import { command as menu } from './commands/menu.js';
+import { command as kick } from './commands/kick.js';
+import { command as block } from './commands/block.js';
+import { command as demote } from './commands/demote.js';
+import { command as promote } from './commands/promote.js';
+import { command as owner } from './commands/owner.js';
+import { command as dp } from './commands/dp.js';
+import { command as test } from './commands/test.js';
+import { command as mute } from './commands/mute.js';
+import { command as open } from './commands/open.js';
 
 // Initialize command map
 const commands = new Map<string, BotCommand>();

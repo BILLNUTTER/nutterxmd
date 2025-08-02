@@ -1,14 +1,14 @@
 import { WASocket, proto } from '@whiskeysockets/baileys';
-import { FeatureHandler } from '../shared/types';
-import { feature as autoreply } from './features/autoreply';
-import { feature as antidelete } from './features/antidelete';
-import { feature as groupEvents } from './features/groupEvents';
-import { feature as presence } from './features/presence';
-import { feature as autobio } from './features/autobio';
-import { feature as antilink } from './features/antilink';
-import { feature as salute } from './features/salute';
-import { feature as autoread } from './features/autoread';
-import { feature as autoview } from './features/autoview';
+import { FeatureHandler } from '../shared/types.js';
+import { feature as autoreply } from './features/autoreply.js';
+import { feature as antidelete } from './features/antidelete.js';
+import { feature as groupEvents } from './features/groupEvents.js';
+import { feature as presence } from './features/presence.js';
+import { feature as autobio } from './features/autobio.js';
+import { feature as antilink } from './features/antilink.js';
+import { feature as salute } from './features/salute.js';
+import { feature as autoread } from './features/autoread.js';
+import { feature as autoview } from './features/autoview.js';
 
 const features: FeatureHandler[] = [
   autoreply,

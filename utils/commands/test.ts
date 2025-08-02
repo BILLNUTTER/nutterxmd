@@ -1,8 +1,8 @@
 import { WASocket, proto } from '@whiskeysockets/baileys';
 import fs from 'fs';
 import path from 'path';
-import { BotCommand } from '../../shared/types';
-import { getSessionUserSettings } from '../getSessionUserSettings';
+import { BotCommand } from '../../shared/types.js';
+import { getSessionUserSettings } from '../getSessionUserSettings.js';
 
 const WATERMARK = '\n\n_➤ nutterxmd_';
 

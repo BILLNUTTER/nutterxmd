@@ -1,12 +1,12 @@
 import { WASocket, proto } from '@whiskeysockets/baileys';
-import { FeatureHandler } from '../../shared/types';
+import { FeatureHandler } from '../../shared/types.js';
 import {
   getLinkWarning,
   incrementLinkWarning,
   resetLinkWarning,
-} from '../../models/LinkWarning';
-import User from '../../models/User';
-import UserSettings from '../../models/UserSettings';
+} from '../../models/LinkWarning.js';
+import User from '../../models/User.js';
+import UserSettings from '../../models/UserSettings.js';
 
 const WATERMARK = '\n\n_➤ nutterxmd_';
 const MAX_WARNINGS = 3;

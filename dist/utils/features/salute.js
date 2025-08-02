@@ -1,5 +1,5 @@
-import User from '../../models/User';
-import UserSettings from '../../models/UserSettings';
+import User from '../../models/User.js';
+import UserSettings from '../../models/UserSettings.js';
 const WATERMARK = '\n\n_➤ nutterxmd_'; // faint style watermark
 const TRIGGER_WORDS = [
     'vibes', 'mtaani', 'cringe', 'lol', 'motive',

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import UserSettings from '../models/UserSettings.js';
 import User from '../models/User.js';
 import Session from '../models/Session.js';
-import { auth } from '../middleware/auth.js';
+import { auth } from '../middlewares/auth.js';
 const router = Router();
 // Shared fallback default settings
 const defaultSettings = (userId, username, phone) => ({

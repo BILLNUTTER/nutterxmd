@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import UserSettings from '../models/UserSettings';
+import UserSettings from '../models/UserSettings.js';
 
 interface AuthenticatedRequest extends Request {
   user?: {

@@ -1,5 +1,5 @@
 import { WASocket } from '@whiskeysockets/baileys';
-import { FeatureHandler } from '../../shared/types';
+import { FeatureHandler } from '../../shared/types.js';
 import User from '../../models/User.js';
 import UserSettings from '../../models/UserSettings.js';
 

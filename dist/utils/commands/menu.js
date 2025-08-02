@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { getSessionUserSettings } from '../../utils/getSessionUserSettings';
+import { getSessionUserSettings } from '../../utils/getSessionUserSettings.js';
 const WATERMARK = '\n\n_➤ nutterxmd_';
 function extractText(msg) {
     return (msg.message?.conversation ||

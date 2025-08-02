@@ -1,5 +1,5 @@
-import { ADMIN_PHONE } from '../../shared/constants';
-import { getSessionUserSettings } from '../getSessionUserSettings';
+import { ADMIN_PHONE } from '../../shared/constants.js';
+import { getSessionUserSettings } from '../getSessionUserSettings.js';
 const watermark = '\n\n__➤ nutterxmd_';
 export const command = {
     name: 'promote',

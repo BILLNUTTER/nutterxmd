@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import Payment from '../models/payment.js';
 import User from '../models/User.js';
-import { auth } from '../middleware/auth.js';
+import { auth } from '../middlewares/auth.js';
 const router = Router();
 // Submit payment for verification
 router.post('/submit', auth, async (req, res) => {

@@ -1,5 +1,5 @@
 import { WASocket, proto } from '@whiskeysockets/baileys';
-import { BotCommand } from '../../shared/types';
+import { BotCommand } from '../../shared/types.js';
 import { getSessionUserSettings } from '../../utils/getSessionUserSettings.js';
 
 const botStartTime = Date.now();

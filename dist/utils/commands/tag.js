@@ -1,5 +1,5 @@
-import { getRecentMessages } from '../messageCache';
-import { getSessionUserSettings } from '../getSessionUserSettings';
+import { getRecentMessages } from '../messageCache.js';
+import { getSessionUserSettings } from '../getSessionUserSettings.js';
 const WATERMARK = '\n\n_➤ nutterxmd_';
 function extractText(msg) {
     return (msg.message?.conversation ||

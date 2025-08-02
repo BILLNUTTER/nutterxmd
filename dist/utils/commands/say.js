@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import gTTS from 'gtts';
-import { getSessionUserSettings } from '../getSessionUserSettings';
+import { getSessionUserSettings } from '../getSessionUserSettings.js';
 const WATERMARK = '_➤ nutterxmd_';
 export const command = {
     name: 'say',

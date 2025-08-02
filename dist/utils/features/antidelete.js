@@ -1,5 +1,5 @@
 import { downloadMediaMessage } from '@whiskeysockets/baileys';
-import { getCachedMessage } from '../messageCache';
+import { getCachedMessage } from '../messageCache.js';
 import User from '../../models/User.js';
 import UserSettings from '../../models/UserSettings.js';
 const WATERMARK = '\n\n' + ' '.repeat(30) + '| nutterxmd';

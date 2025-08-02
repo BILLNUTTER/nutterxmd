@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import UserSettings, { UserSettingsDocument } from '../models/UserSettings.js';
 import User from '../models/User.js';
 import Session from '../models/Session.js';
-import { auth } from '../middleware/auth.js';
+import { auth } from '../middlewares/auth.js';
 
 const router = Router();
 

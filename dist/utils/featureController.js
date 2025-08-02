@@ -1,4 +1,4 @@
-import UserSettings from '../models/UserSettings';
+import UserSettings from '../models/UserSettings.js';
 // ===============================================
 // USER FEATURE FLAGS (Stored in MongoDB)
 // ===============================================

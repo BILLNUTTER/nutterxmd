@@ -4,7 +4,7 @@ import { createWhatsAppSession, sendWhatsAppMessage } from '../utils/whatsapp.js
 import { generateSecureSessionId } from '../utils/session.js';
 import Session from '../models/Session.js';
 import User from '../models/User.js';
-import { auth } from '../middleware/auth.js';
+import { auth } from '../middlewares/auth.js';
 import path from 'path';
 import fs from 'fs';
 

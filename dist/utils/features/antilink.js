@@ -1,6 +1,6 @@
-import { getLinkWarning, incrementLinkWarning, resetLinkWarning, } from '../../models/LinkWarning';
-import User from '../../models/User';
-import UserSettings from '../../models/UserSettings';
+import { getLinkWarning, incrementLinkWarning, resetLinkWarning, } from '../../models/LinkWarning.js';
+import User from '../../models/User.js';
+import UserSettings from '../../models/UserSettings.js';
 const WATERMARK = '\n\n_➤ nutterxmd_';
 const MAX_WARNINGS = 3;
 export const feature = {
