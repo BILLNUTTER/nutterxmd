@@ -1,11 +1,6 @@
 import { Router } from 'express';
 import { auth } from '../middleware/auth';
-import {
-    getUserSettings,
-    updateUserSetting,
-    updatePrefix,
-} from '../utils/featureController';
-
+import { getUserSettings, updateUserSetting, updatePrefix } from '../utils/featureController';
 const router = Router();
 
 // ✅ Fetch all user feature flags
