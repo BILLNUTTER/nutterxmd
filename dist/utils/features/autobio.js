@@ -1,11 +1,5 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.feature = void 0;
-const User_js_1 = __importDefault(require("../../models/User.js"));
-const UserSettings_js_1 = __importDefault(require("../../models/UserSettings.js"));
+import User from '../../models/User.js';
+import UserSettings from '../../models/UserSettings.js';
 const WATERMARK = '\n\n_➤ nutterxmd_';
 const JOKES_AND_QUOTES = [
     '😂 Mtu akikuambia "uko single juu uko selective", mwambie hata takataka huchaguliwi',
@@ -30,17 +24,17 @@ function getCurrentTime() {
     const ss = String(now.getSeconds()).padStart(2, '0');
     return `${hh}:${mm}:${ss}`;
 }
-exports.feature = {
+export const feature = {
     name: 'autobio',
     enabled: () => true, // always loaded, conditionally runs in register
     register: async (sock) => {
         const sessionPhone = sock.user?.id?.split('@')[0];
-        const sessionUser = await User_js_1.default.findOne({ phone: sessionPhone });
+        const sessionUser = await User.findOne({ phone: sessionPhone });
         if (!sessionUser) {
             console.log(`[autobio] ❌ No session user found for ${sessionPhone}`);
             return;
         }
-        const settings = await UserSettings_js_1.default.findOne({ userId: sessionUser._id });
+        const settings = await UserSettings.findOne({ userId: sessionUser._id });
         if (!settings?.features?.autobio) {
             console.log(`[autobio] 🚫 Feature disabled for ${sessionPhone}`);
             return;

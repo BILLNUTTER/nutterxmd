@@ -1,12 +1,6 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.command = void 0;
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const getSessionUserSettings_1 = require("../../utils/getSessionUserSettings");
+import fs from 'fs';
+import path from 'path';
+import { getSessionUserSettings } from '../../utils/getSessionUserSettings';
 const WATERMARK = '\n\n_➤ nutterxmd_';
 function extractText(msg) {
     return (msg.message?.conversation ||
@@ -16,14 +10,14 @@ function extractText(msg) {
 function formatMention(jid) {
     return `@${jid.split('@')[0]}`;
 }
-exports.command = {
+export const command = {
     name: 'menu',
     description: 'Show command menu as image and audio with watermark',
     execute: async (sock, msg) => {
         const jid = msg.key.remoteJid;
         const sender = msg.key.participant || msg.key.remoteJid;
         // Load user session + settings
-        const session = await (0, getSessionUserSettings_1.getSessionUserSettings)(sock);
+        const session = await getSessionUserSettings(sock);
         if (!session?.settings) {
             await sock.sendMessage(jid, {
                 text: `❌ Bot not registered. Link via dashboard first.${WATERMARK}`,
@@ -82,11 +76,11 @@ exports.command = {
 https://www.youtube.com/channel/UCK9XxcLkDrsYZddZqbQZ8uA?sub_confirmation=1
 ${' '.repeat(20)}\n\n_➤ nutterxmd_`;
         const fullCaption = `hey ${mention}, ${captionText}${MENU_TEXT}`;
-        const imagePath = path_1.default.resolve('images/juice.jpg');
-        const audioPath = path_1.default.resolve('audio/menu.mp3');
+        const imagePath = path.resolve('images/juice.jpg');
+        const audioPath = path.resolve('audio/menu.mp3');
         // 🖼️ Send image
-        if (fs_1.default.existsSync(imagePath)) {
-            const imageBuffer = fs_1.default.readFileSync(imagePath);
+        if (fs.existsSync(imagePath)) {
+            const imageBuffer = fs.readFileSync(imagePath);
             await sock.sendMessage(jid, {
                 image: imageBuffer,
                 caption: fullCaption,
@@ -99,9 +93,9 @@ ${' '.repeat(20)}\n\n_➤ nutterxmd_`;
             });
         }
         // 🔊 Send audio
-        if (fs_1.default.existsSync(audioPath)) {
-            const audioBuffer = fs_1.default.readFileSync(audioPath);
-            const thumbBuffer = fs_1.default.existsSync(imagePath) ? fs_1.default.readFileSync(imagePath) : undefined;
+        if (fs.existsSync(audioPath)) {
+            const audioBuffer = fs.readFileSync(audioPath);
+            const thumbBuffer = fs.existsSync(imagePath) ? fs.readFileSync(imagePath) : undefined;
             await sock.sendMessage(jid, {
                 audio: audioBuffer,
                 mimetype: 'audio/mp4',

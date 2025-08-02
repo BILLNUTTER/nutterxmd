@@ -1,12 +1,6 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminAuth = exports.auth = void 0;
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+import jwt from 'jsonwebtoken';
 // 🔐 JWT Auth Middleware
-const auth = (req, res, next) => {
+export const auth = (req, res, next) => {
     try {
         const authHeader = req.header('Authorization');
         const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
@@ -19,7 +13,7 @@ const auth = (req, res, next) => {
             return res.status(500).json({ message: 'Server configuration error: missing JWT secret' });
         }
         // ✅ Safely cast decoded JWT
-        const decoded = jsonwebtoken_1.default.verify(token, jwtSecret);
+        const decoded = jwt.verify(token, jwtSecret);
         req.userId = decoded.userId;
         next();
     }
@@ -28,9 +22,8 @@ const auth = (req, res, next) => {
         return res.status(401).json({ message: 'Token is not valid' });
     }
 };
-exports.auth = auth;
 // 🛡️ Admin Key Middleware
-const adminAuth = (req, res, next) => {
+export const adminAuth = (req, res, next) => {
     const incomingKey = req.headers['admin-key'];
     const expectedKey = process.env.ADMIN_KEY;
     console.log('\n🔐 [Admin Auth Middleware]');
@@ -47,4 +40,3 @@ const adminAuth = (req, res, next) => {
     console.log('✅ Admin Key validated successfully.\n');
     next();
 };
-exports.adminAuth = adminAuth;

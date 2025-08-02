@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.command = void 0;
-const getSessionUserSettings_1 = require("../../utils/getSessionUserSettings");
-const constants_1 = require("../../shared/constants");
+import { getSessionUserSettings } from '../../utils/getSessionUserSettings';
+import { ADMIN_PHONE } from '../../shared/constants';
 const watermark = '\n\n_➤ nutterxmd_';
-exports.command = {
+export const command = {
     name: 'kick',
     description: '🚪 Remove mentioned user(s) from group',
     execute: async (sock, msg) => {
@@ -12,7 +9,7 @@ exports.command = {
         const senderJid = msg.key.participant || msg.key.remoteJid;
         const isGroup = groupId.endsWith('@g.us');
         // Validate session + prefix
-        const sessionData = await (0, getSessionUserSettings_1.getSessionUserSettings)(sock);
+        const sessionData = await getSessionUserSettings(sock);
         if (!sessionData?.user || !sessionData?.settings) {
             await sock.sendMessage(groupId, {
                 text: `❌ Session not registered. Link your bot via dashboard first.${watermark}`,
@@ -32,7 +29,7 @@ exports.command = {
         const metadata = await sock.groupMetadata(groupId);
         const isBotAdmin = metadata.participants.some(p => p.id === sock.user?.id && p.admin !== undefined);
         const isSenderAdmin = metadata.participants.some(p => p.id === senderJid && p.admin !== undefined);
-        const isOwner = senderJid.includes(constants_1.ADMIN_PHONE);
+        const isOwner = senderJid.includes(ADMIN_PHONE);
         const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
         if (!mentioned.length) {
             await sock.sendMessage(groupId, {

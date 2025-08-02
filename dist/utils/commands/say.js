@@ -1,21 +1,15 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.command = void 0;
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const uuid_1 = require("uuid");
-const gtts_1 = __importDefault(require("gtts"));
-const getSessionUserSettings_1 = require("../getSessionUserSettings");
+import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import gTTS from 'gtts';
+import { getSessionUserSettings } from '../getSessionUserSettings';
 const WATERMARK = '_➤ nutterxmd_';
-exports.command = {
+export const command = {
     name: 'say',
     description: 'Convert text to speech and send as audio',
     execute: async (sock, msg) => {
         const jid = msg.key.remoteJid;
-        const session = await (0, getSessionUserSettings_1.getSessionUserSettings)(sock);
+        const session = await getSessionUserSettings(sock);
         if (!session || !session.settings)
             return;
         const prefix = session.settings.prefix || '.';
@@ -32,11 +26,11 @@ exports.command = {
             });
             return;
         }
-        const id = (0, uuid_1.v4)();
-        const tempDir = path_1.default.join(__dirname, '../../temp');
-        const ttsPath = path_1.default.join(tempDir, `say-${id}.mp3`);
-        fs_1.default.mkdirSync(tempDir, { recursive: true });
-        const tts = new gtts_1.default(sayMessage, 'en');
+        const id = uuidv4();
+        const tempDir = path.join(__dirname, '../../temp');
+        const ttsPath = path.join(tempDir, `say-${id}.mp3`);
+        fs.mkdirSync(tempDir, { recursive: true });
+        const tts = new gTTS(sayMessage, 'en');
         tts.save(ttsPath, async (err) => {
             if (err) {
                 console.error('TTS Error:', err);
@@ -44,7 +38,7 @@ exports.command = {
                 return;
             }
             try {
-                const audio = fs_1.default.readFileSync(ttsPath);
+                const audio = fs.readFileSync(ttsPath);
                 await sock.sendMessage(jid, {
                     audio,
                     mimetype: 'audio/mp4',
@@ -59,7 +53,7 @@ exports.command = {
                         }
                     }
                 });
-                fs_1.default.unlinkSync(ttsPath);
+                fs.unlinkSync(ttsPath);
             }
             catch (readErr) {
                 console.error('Read Error:', readErr);

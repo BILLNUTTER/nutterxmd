@@ -1,19 +1,14 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const cors_1 = __importDefault(require("cors"));
-const mongoose_1 = __importDefault(require("mongoose"));
-const dotenv_1 = __importDefault(require("dotenv"));
-const path_1 = __importDefault(require("path"));
-const fs_1 = __importDefault(require("fs"));
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 // ✅ Load .env file early
-const envPath = path_1.default.resolve(__dirname, '../.env');
-if (fs_1.default.existsSync(envPath)) {
+const envPath = path.resolve(__dirname, '../.env');
+if (fs.existsSync(envPath)) {
     console.log(`📦 Loading environment variables from: ${envPath}`);
-    dotenv_1.default.config({ path: envPath });
+    dotenv.config({ path: envPath });
 }
 else {
     console.warn(`⚠️ .env file not found at: ${envPath}`);
@@ -34,25 +29,25 @@ console.log(`   ADMIN_KEY: ${process.env.ADMIN_KEY ? '[DEFINED]' : '[NOT DEFINED
 console.log(`   MONGO_URI: ${process.env.MONGO_URI ? '[DEFINED]' : '[NOT DEFINED]'}`);
 console.log(`   JWT_SECRET: ${process.env.JWT_SECRET ? '[DEFINED]' : '[NOT DEFINED]'}`);
 // ✅ Express app setup
-const app = (0, express_1.default)();
-app.use((0, cors_1.default)());
-app.use(express_1.default.json());
+const app = express();
+app.use(cors());
+app.use(express.json());
 // ✅ Import routes
 console.log('🔌 Importing route modules...');
-const auth_1 = __importDefault(require("./routes/auth"));
-const whatsapp_1 = __importDefault(require("./routes/whatsapp"));
-const payment_1 = __importDefault(require("./routes/payment"));
-const dashboard_1 = __importDefault(require("./routes/dashboard"));
-const admin_1 = __importDefault(require("./routes/admin"));
-const features_1 = __importDefault(require("./routes/features"));
-const whatsapp_js_1 = require("./utils/whatsapp.js");
-const User_js_1 = __importDefault(require("./models/User.js"));
-const Session_js_1 = __importDefault(require("./models/Session.js"));
+import authRoutes from './routes/auth';
+import whatsappRoutes from './routes/whatsapp';
+import paymentRoutes from './routes/payment';
+import dashboardRoutes from './routes/dashboard';
+import adminRoutes from './routes/admin';
+import featureRoutes from './routes/features';
+import { createWhatsAppSession } from './utils/whatsapp.js';
+import User from './models/User.js';
+import Session from './models/Session.js';
 // ✅ Connect MongoDB
 const connectDB = async () => {
     try {
         const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/nutterxmd';
-        await mongoose_1.default.connect(uri);
+        await mongoose.connect(uri);
         console.log('✅ MongoDB connected');
     }
     catch (err) {
@@ -70,15 +65,15 @@ const connectDB = async () => {
 const RESTORE_MAX_AGE_MS = 1000 * 60 * 60 * 6; // 6 hours
 const restoreActiveSessions = async () => {
     console.log('♻️ Checking for active WhatsApp sessions to restore...');
-    const sessions = await Session_js_1.default.find({ isLinked: true, isActive: true });
+    const sessions = await Session.find({ isLinked: true, isActive: true });
     let restoredCount = 0;
     for (const session of sessions) {
-        const credsPath = path_1.default.join('./sessions', session.userId, 'creds.json');
-        if (!fs_1.default.existsSync(credsPath)) {
+        const credsPath = path.join('./sessions', session.userId, 'creds.json');
+        if (!fs.existsSync(credsPath)) {
             console.warn(`🗑️ Skipping session for user ${session.userId} — missing creds.json`);
             continue;
         }
-        const stats = fs_1.default.statSync(credsPath);
+        const stats = fs.statSync(credsPath);
         const ageMs = Date.now() - stats.mtimeMs;
         if (ageMs > RESTORE_MAX_AGE_MS) {
             console.warn(`⏱️ Skipping session for user ${session.userId} — stale (${Math.round(ageMs / 60000)} min old)`);
@@ -86,7 +81,7 @@ const restoreActiveSessions = async () => {
         }
         try {
             console.log(`🔄 Restoring session for user ${session.userId}...`);
-            await (0, whatsapp_js_1.createWhatsAppSession)(session.userId);
+            await createWhatsAppSession(session.userId);
             restoredCount++;
         }
         catch (err) {
@@ -95,13 +90,13 @@ const restoreActiveSessions = async () => {
     }
     if (restoredCount === 0) {
         console.warn('🆕 No live sessions restored. Creating a new one with QR for a user...');
-        const anyUser = await User_js_1.default.findOne({}); // You can filter or prioritize here
+        const anyUser = await User.findOne({}); // You can filter or prioritize here
         if (anyUser) {
             try {
-                const { qr } = await (0, whatsapp_js_1.createWhatsAppSession)(anyUser._id.toString(), undefined, true);
+                const { qr } = await createWhatsAppSession(anyUser._id.toString(), undefined, true);
                 if (qr) {
-                    const qrPath = path_1.default.join('./', `qr-${anyUser._id}.png`);
-                    fs_1.default.writeFileSync(qrPath, Buffer.from(qr.split(',')[1], 'base64'));
+                    const qrPath = path.join('./', `qr-${anyUser._id}.png`);
+                    fs.writeFileSync(qrPath, Buffer.from(qr.split(',')[1], 'base64'));
                     console.log(`📲 QR code generated for user ${anyUser._id} at: ${qrPath}`);
                 }
             }
@@ -122,12 +117,12 @@ connectDB().then(() => {
     restoreActiveSessions();
     // ✅ Mount API routes
     console.log('🚏 Registering API routes...');
-    app.use('/api/auth', auth_1.default);
-    app.use('/api/whatsapp', whatsapp_1.default);
-    app.use('/api/payment', payment_1.default);
-    app.use('/api/dashboard', dashboard_1.default);
-    app.use('/api/admin', admin_1.default);
-    app.use('/api/features', features_1.default);
+    app.use('/api/auth', authRoutes);
+    app.use('/api/whatsapp', whatsappRoutes);
+    app.use('/api/payment', paymentRoutes);
+    app.use('/api/dashboard', dashboardRoutes);
+    app.use('/api/admin', adminRoutes);
+    app.use('/api/features', featureRoutes);
     // ✅ Health check route
     app.get('/api/health', (_req, res) => {
         res.json({ status: 'OK', timestamp: new Date().toISOString() });

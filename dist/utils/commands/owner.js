@@ -1,16 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.command = void 0;
-const getSessionUserSettings_1 = require("../getSessionUserSettings");
+import { getSessionUserSettings } from '../getSessionUserSettings';
 const watermark = '_➤ nutterxmd_';
-exports.command = {
+export const command = {
     name: 'owner',
     description: '👑 Get contact info of the bot owner',
     execute: async (sock, msg) => {
         const jid = msg.key.remoteJid;
         const sender = msg.key.participant || msg.key.remoteJid;
         // Load prefix from DB/session
-        const session = await (0, getSessionUserSettings_1.getSessionUserSettings)(sock);
+        const session = await getSessionUserSettings(sock);
         if (!session || !session.settings)
             return;
         const prefix = session.settings.prefix || '.';

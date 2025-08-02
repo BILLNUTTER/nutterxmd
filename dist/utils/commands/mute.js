@@ -1,9 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.command = void 0;
-const getSessionUserSettings_1 = require("../getSessionUserSettings");
+import { getSessionUserSettings } from '../getSessionUserSettings';
 const watermark = '| nutterxmd';
-exports.command = {
+export const command = {
     name: 'mute',
     description: '🚫 Close group (only admins can message)',
     execute: async (sock, msg) => {
@@ -16,7 +13,7 @@ exports.command = {
             });
             return;
         }
-        const session = await (0, getSessionUserSettings_1.getSessionUserSettings)(sock);
+        const session = await getSessionUserSettings(sock);
         if (!session || !session.settings)
             return;
         const groupMeta = await sock.groupMetadata(jid);
