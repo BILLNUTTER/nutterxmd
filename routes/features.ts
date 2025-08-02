@@ -1,13 +1,20 @@
 import { Router } from 'express';
-import { getFeatureFlags, updateFeatureFlag, updatePrefix } from '../utils/featureController';
-import { auth, adminAuth } from '../middleware/auth';
+import { auth } from '../middleware/auth';
+import {
+    getUserSettings,
+    updateUserSetting,
+    updatePrefix,
+} from '../utils/featureController';
 
 const router = Router();
 
-router.get('/', auth, getFeatureFlags);
-router.post('/toggle', adminAuth, updateFeatureFlag);
+// ✅ Fetch all user feature flags
+router.get('/', auth, getUserSettings);
 
-// ✅ New route to update prefix
+// ✅ Dynamically toggle any setting (like 'autobio', 'antidelete')
+router.post('/toggle', auth, updateUserSetting);
+
+// ✅ Update bot prefix
 router.post('/prefix', auth, updatePrefix);
 
 export default router;
