@@ -2,6 +2,7 @@ import * as baileys from '@whiskeysockets/baileys';
 import * as fs from 'fs';
 import * as path from 'path';
 import QRCode from 'qrcode';
+import pino from 'pino';
 
 // Extract Baileys functions/types
 const makeWASocket = baileys.makeWASocket;
@@ -124,6 +125,7 @@ export const createWhatsAppSession = async (
 
     const sock = makeWASocket({
       version,
+      logger: pino({ level: 'error' }),
       printQRInTerminal: false,
       auth: state,
       connectTimeoutMs: 60_000,
@@ -241,6 +243,7 @@ export const createWhatsAppSession = async (
   return new Promise((resolve) => {
     const sock = makeWASocket({
       version,
+      logger: pino({ level: 'error' }),
       printQRInTerminal: false,
       auth: state,
       browser: ['NutterXMD', 'chrome', '1.0.0']

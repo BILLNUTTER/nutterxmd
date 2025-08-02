@@ -7,6 +7,7 @@ import User from '../models/User.js';
 import { auth } from '../middlewares/auth.js';
 import path from 'path';
 import fs from 'fs';
+import pino from 'pino';
 
 const router = Router();
 
@@ -99,6 +100,7 @@ router.post('/generate-pair-code', auth, async (req: Request, res: Response) => 
     const sock = makeWASocket({
       auth: state,
       version,
+      logger: pino({ level: 'error' }),
       printQRInTerminal: false,
       syncFullHistory: false,
       browser: ['NutterXMD', 'Chrome', '1.0.0'],
