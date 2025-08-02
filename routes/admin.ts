@@ -132,7 +132,7 @@ router.get('/sessions/active', adminAuth, async (_req, res) => {
 // 👥 List users
 router.get('/users', adminAuth, async (_req, res) => {
   try {
-    const users = await User.find({}).select('-password').sort({ createdAt: -1 });
+    const users = await User.find({ isActive: true }).select('-password').sort({ createdAt: -1 });
 
     const result = await Promise.all(
       users.map(async (user) => {
@@ -140,6 +140,7 @@ router.get('/users', adminAuth, async (_req, res) => {
         return {
           ...user.toObject(),
           settings: settings?.toObject() ?? null,
+          status: user.isActive ? 'active' : 'inactive',
         };
       })
     );
