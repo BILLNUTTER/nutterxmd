@@ -2,8 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import session from 'express-session';
-import MongoStore from 'connect-mongo';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -43,25 +41,6 @@ console.log(`   JWT_SECRET: ${process.env.JWT_SECRET ? '[DEFINED]' : '[NOT DEFIN
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-
-// ✅ Use session storage with MongoDB to persist sessions across deploys
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || 'super-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-      ttl: 14 * 24 * 60 * 60 // 14 days
-    }),
-    cookie: {
-      secure: false, // set true if using HTTPS
-      maxAge: 14 * 24 * 60 * 60 * 1000
-    }
-  })
-);
-
 
 // ✅ Import routes
 console.log('🔌 Importing route modules...');
