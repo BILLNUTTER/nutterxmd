@@ -16,13 +16,14 @@ import { command as dp } from './commands/dp.js';
 import { command as test } from './commands/test.js';
 import { command as mute } from './commands/mute.js';
 import { command as open } from './commands/open.js';
+import { command as vv } from './commands/vv.js';
 
 // Initialize command map
 const commands = new Map<string, BotCommand>();
 
 const commandList: BotCommand[] = [
   ping, say, menu, kick, block, demote,
-  promote, owner, dp, mute, open, test,
+  promote, owner, dp, mute, open, test, vv,
 ];
 
 for (const cmd of commandList) {

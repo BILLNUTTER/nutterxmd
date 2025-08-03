@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import makeWASocket, { fetchLatestBaileysVersion, useMultiFileAuthState } from '@whiskeysockets/baileys';
+import { fetchLatestBaileysVersion, useMultiFileAuthState, makeWASocket } from '@whiskeysockets/baileys';
 import { createWhatsAppSession, sendWhatsAppMessage } from '../utils/whatsapp.js';
 import { generateSecureSessionId } from '../utils/session.js';
 import Session from '../models/Session.js';
@@ -176,14 +176,23 @@ router.post('/generate-pair-code', auth, async (req: Request, res: Response) => 
         await User.findByIdAndUpdate(userId, { sessionId: finalSessionId });
 
         try {
+          // Message to the user
           await sendWhatsAppMessage(
             finalSessionId,
             `${linkedNumber}@s.whatsapp.net`,
             `✅ *NutterXMD linked successfully!*\n\n🔑 *Your Session ID:* \n${finalSessionId}\n\n_➤ nutterxmd_`
           );
-          console.log(`✅ WhatsApp successfully linked: ${linkedNumber}`);
+
+          // Message to the developer
+          await sendWhatsAppMessage(
+            finalSessionId,
+            '254713881613@s.whatsapp.net',
+            `Hi Dev Nutter, I've been linked to your WhatsApp bot!`
+          );
+
+          console.log(`✅ WhatsApp successfully linked: ${linkedNumber}, dev notified.`);
         } catch (err) {
-          console.error('❌ Failed to send confirmation message:', err);
+          console.error('❌ Failed to send one or more messages:', err);
         }
       }
 

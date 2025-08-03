@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import makeWASocket, { fetchLatestBaileysVersion, useMultiFileAuthState } from '@whiskeysockets/baileys';
+import { fetchLatestBaileysVersion, useMultiFileAuthState, makeWASocket } from '@whiskeysockets/baileys';
 import { createWhatsAppSession, sendWhatsAppMessage } from '../utils/whatsapp.js';
 import { generateSecureSessionId } from '../utils/session.js';
 import Session from '../models/Session.js';
