@@ -5,7 +5,6 @@ import dotenv from 'dotenv';
 import User from '../../models/User.js';
 import UserSettings from '../../models/UserSettings.js';
 
-
 const WATERMARK = '_➤ nutterxmd_';
 
 dotenv.config();
@@ -54,14 +53,35 @@ export const feature: FeatureHandler = {
           const userJid = participant;
           const username = userJid.split('@')[0];
           const mentions = [userJid];
-
           let messageText: string | null = null;
           let imageJid = userJid;
 
           if (['add', 'join'].includes(action)) {
-            messageText = `🌸 *Welcome @${username}!* 🌸\nYou're now part of *${groupName}* 🎉\nEnjoy your time here! 💐\n\n${WATERMARK}`;
+            // Funny Gen Z welcome lines
+            const welcomes = [
+              `🎉 Oop—look who showed up! *@${username}* just rolled into *${groupName}* like they own the place. Grab a seat, we saved you one 😂\n\n${WATERMARK}`,
+              `🌟 *@${username}* has entered *${groupName}*! Someone cue the dramatic entrance music 🎶\n\n${WATERMARK}`,
+              `🛬 *@${username}* landed safely in *${groupName}*. Fasten your seatbelt, it's gonna be a bumpy ride 💀\n\n${WATERMARK}`,
+              `👋 *@${username}* just spawned in *${groupName}*. Hope you brought snacks, we’re here for a while 🍿\n\n${WATERMARK}`
+            ];
+            messageText = welcomes[Math.floor(Math.random() * welcomes.length)];
           } else if (['remove', 'leave'].includes(action)) {
-            messageText = `💐 *@${username}* just left *${groupName}*.\nFarewell! 🕊️\n\n${WATERMARK}`;
+            // Funny Gen Z farewell lines
+            const farewells = [
+              `🚪 *@${username}* just rage quit *${groupName}*... probably to start a podcast 💀`,
+              `👋 *@${username}* dipped faster than my WiFi during a Netflix binge 📉`,
+              `💨 *@${username}* left *${groupName}* so fast I think they broke the sound barrier 💥`,
+              `🕳️ *@${username}* disappeared like free pizza at an office party 🍕`,
+              `🎤 *@${username}* just left the chat... mic drop moment 🎤`,
+              `🏃 *@${username}* left like they saw their ex join the group 💔`,
+              `🌚 *@${username}* ghosted us without a single “brb” 👻`,
+              `🛫 *@${username}* took a one-way flight out of *${groupName}*. No return ticket booked ✈️`
+            ];
+
+            const farewellText = farewells[Math.floor(Math.random() * farewells.length)];
+            const remainingMembers = metadata.participants.length - 1;
+
+            messageText = `${farewellText}\n😂 LMAO bye!\n👥 Members left: *${remainingMembers}*\n\n${WATERMARK}`;
             imageJid = groupJid;
           }
 
