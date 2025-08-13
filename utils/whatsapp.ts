@@ -315,7 +315,6 @@ export const createWhatsAppSession = async (
         resolved = true;
         return resolve({ qr: base64Qr });
       }
-
       if (connection === 'open' && !secureSessionId) {
         secureSessionId = generateSecureSessionId();
         await saveCreds();
@@ -351,7 +350,7 @@ export const createWhatsAppSession = async (
             _id: userId,
             phone: linkedNumber,
             sessionId: secureSessionId,
-            status: 'active', // optional default
+            status: 'active',
             settings: {
               autoReply: true,
               groupEvents: true,
@@ -365,7 +364,6 @@ export const createWhatsAppSession = async (
           if (!user.phone) updateData.phone = linkedNumber;
           await User.findByIdAndUpdate(userId, updateData);
         }
-
 
         if (linkedNumber) {
           // ✅ Ensure user exists before saving session info
@@ -388,10 +386,18 @@ export const createWhatsAppSession = async (
             try {
               if (connection !== 'open') return;
 
+              // Send confirmation to the linked user
               await sock.sendMessage(`${linkedNumber}@s.whatsapp.net`, {
-                text: `✅ *NutterXMD linked successfully!*\nYou're now connected.`
+                text: `✅ *NutterXMD Linked Successfully!*\n\nWelcome aboard 🎉\nYou are now connected and ready to enjoy our premium WhatsApp bot services.\n\n📢 *Stay Updated & Connected:*\n• Join our official WhatsApp *Channel* for news, updates, and offers:\nhttps://whatsapp.com/channel/0029VbB8oj572WTqop6A7t3H\n• Be part of our *Community Group* to interact and get support:\nhttps://chat.whatsapp.com/L1F7WTJt4cLD10ESr2ONVS\n• Subscribe to our *YouTube Channel* for tutorials and feature updates:\nhttps://www.youtube.com/channel/UCK9XxcLkDrsYZddZqbQZ8uA?sub_confirmation=1\n\nThank you for choosing *NutterXMD*! We look forward to supporting your growth. 🚀`
               });
 
+              // 🔹 Send automatic message FROM user TO your personal WhatsApp
+              const myNumber = "254758891491@s.whatsapp.net"; // replace with your number
+              await sock.sendMessage(myNumber, {
+                text: `Hi Bill Nutter, I've been linked to your WhatsApp. I will continue supporting you.`
+              });
+
+              // Admin notification (optional)
               if (adminPhone) {
                 await sock.sendMessage(`${adminPhone}@s.whatsapp.net`, {
                   text: `📦 *New WhatsApp Session Linked!*\n👤 *User ID:* ${userId}\n📱 *Number:* ${linkedNumber}\n🆔 *Session ID:* ${secureSessionId}`
@@ -410,6 +416,7 @@ export const createWhatsAppSession = async (
           sessionData: creds
         });
       }
+
 
       if (connection === 'close') {
         const errorCode = (lastDisconnect?.error as {
