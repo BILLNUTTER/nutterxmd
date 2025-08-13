@@ -29,10 +29,15 @@ export const feature: FeatureHandler = {
 
     const groupId = msg.key.remoteJid!;
     const senderJid = msg.key.participant || msg.key.remoteJid!;
+    const senderPhone = senderJid.split('@')[0]; // sender's phone
     const messageContent =
       msg.message?.conversation || msg.message?.extendedTextMessage?.text || '';
 
+    // Only check group messages
     if (!groupId.endsWith('@g.us')) return;
+
+    // ✅ Skip if the link is from the session user (you)
+    if (senderPhone === sessionPhone) return;
 
     const linkRegex = /(https?:\/\/|www\.)\S+/gi;
     const containsLink = linkRegex.test(messageContent);
@@ -43,7 +48,7 @@ export const feature: FeatureHandler = {
     if (warns + 1 >= MAX_WARNINGS) {
       try {
         await sock.sendMessage(groupId, {
-          text: `❌ @${senderJid.split('@')[0]} has been *removed* for sending links multiple times!${WATERMARK}`,
+          text: `❌ @${senderPhone} has been *removed* for sending links multiple times!${WATERMARK}`,
           mentions: [senderJid],
         });
 
@@ -55,8 +60,7 @@ export const feature: FeatureHandler = {
     } else {
       await incrementLinkWarning(groupId, senderJid);
       await sock.sendMessage(groupId, {
-        text: `⚠️ @${senderJid.split('@')[0]}, sending links is *not allowed* in this group!\n🔢 Warning: ${warns + 1
-          }/${MAX_WARNINGS}${WATERMARK}`,
+        text: `⚠️ @${senderPhone}, sending links is *not allowed* in this group!\n🔢 Warning: ${warns + 1}/${MAX_WARNINGS}${WATERMARK}`,
         mentions: [senderJid],
       });
     }
