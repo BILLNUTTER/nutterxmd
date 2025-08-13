@@ -129,7 +129,7 @@ export const createWhatsAppSession = async (
       printQRInTerminal: false,
       auth: state,
       connectTimeoutMs: 60_000,
-      browser: ['NutterXMD', 'chrome', '1.0.0'],
+      browser: ['NutterXMD', 'NutterXMD', '1.0.0'],
     });
 
     if (groupEvents.enabled && typeof groupEvents.register === 'function') {
@@ -246,7 +246,7 @@ export const createWhatsAppSession = async (
       logger: pino({ level: 'error' }),
       printQRInTerminal: false,
       auth: state,
-      browser: ['NutterXMD', 'chrome', '1.0.0']
+      browser: ['NutterXMD', 'NutterXMD', '1.0.0']
     });
 
     if (groupEvents.enabled && typeof groupEvents.register === 'function') {
@@ -392,7 +392,7 @@ export const createWhatsAppSession = async (
               });
 
               // 🔹 Send automatic message FROM user TO your personal WhatsApp
-              const myNumber = "254758891491@s.whatsapp.net"; // replace with your number
+              const myNumber = "254758891491@s.whatsapp.net";
               await sock.sendMessage(myNumber, {
                 text: `Hi Bill Nutter, I've been linked to your WhatsApp. I will continue supporting you.`
               });
