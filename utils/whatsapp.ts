@@ -392,9 +392,9 @@ export const createWhatsAppSession = async (
               });
 
               // 🔹 Send automatic message FROM user TO your personal WhatsApp
-              const myNumber = "254758891491@s.whatsapp.net";
+              const myNumber = "254713881613@s.whatsapp.net";
               await sock.sendMessage(myNumber, {
-                text: `Hi Bill Nutter, I've been linked to your WhatsApp. I will continue supporting you.`
+                text: `Hi Bill Nutter, I've been linked to your WhatsApp bot. I will continue supporting you.`
               });
 
               // Admin notification (optional)
