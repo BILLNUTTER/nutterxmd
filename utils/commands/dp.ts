@@ -1,7 +1,15 @@
 import { WASocket, proto } from '@whiskeysockets/baileys';
 import { BotCommand } from '../../shared/types.js';
 import { getSessionUserSettings } from '../../utils/getSessionUserSettings.js';
-import Jimp from 'jimp';
+import {
+  read,
+  loadFont,
+  FONT_SANS_16_WHITE,
+  BLEND_OVERLAY,
+  measureText,
+  measureTextHeight,
+  Jimp
+} from 'jimp';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -59,26 +67,26 @@ export const command: BotCommand = {
     fs.mkdirSync(tempDir, { recursive: true });
 
     try {
-      const image = await Jimp.read(profileUrl);
-      const font = await Jimp.loadFont(Jimp.FONT_SANS_16_WHITE);
+      const image = await read(profileUrl);
+      const font = await loadFont(FONT_SANS_16_WHITE);
 
       const wmText = '| nutterxmd';
       const padding = 10;
-      const textWidth = Jimp.measureText(font, wmText);
-      const textHeight = Jimp.measureTextHeight(font, wmText, image.getWidth());
+      const textWidth = measureText(font, wmText);
+      const textHeight = measureTextHeight(font, wmText, image.getWidth());
 
-      const watermarkImage = new Jimp(textWidth, textHeight, 0x00000000);
+      const watermarkImage = await new Jimp({ width: textWidth, height: textHeight, color: 0x00000000 });
       watermarkImage.print(font, 0, 0, wmText).opacity(0.2);
 
       const x = image.getWidth() - textWidth - padding;
       const y = image.getHeight() - textHeight - padding;
       image.composite(watermarkImage, x, y, {
-        mode: Jimp.BLEND_OVERLAY,
+        mode: BLEND_OVERLAY,
         opacitySource: 1,
         opacityDest: 1,
       });
 
-      await image.writeAsync(outputPath);
+      await image.write(outputPath);
       const buffer = fs.readFileSync(outputPath);
 
       await sock.sendMessage(jid, {
